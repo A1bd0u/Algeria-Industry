@@ -1,0 +1,293 @@
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { 
+  ArrowLeft, Calendar, Building2, FileText, 
+  Clock, Globe, Lock, ShieldCheck, 
+  CheckCircle2, Download, Send, AlertCircle,
+  MessageSquare, User, Info, FileStack
+} from 'lucide-react';
+import { cn } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
+
+const TenderDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const [isResponding, setIsResponding] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Mock detail data
+  const tender = {
+    id: 1,
+    title: "Maintenance préventive des turbines à gaz",
+    company: "Sonatrach - Division Production",
+    sector: "Énergie",
+    deadline: "2026-05-15",
+    published: "2026-04-10",
+    type: "Public",
+    status: "Ouvert",
+    description: "Prestation de maintenance annuelle pour 4 turbines à gaz Frame 5 situées sur le site de Hassi Messaoud. Le contrat inclut l'inspection périodique, le remplacement des filtres et l'équilibrage dynamique des rotors.",
+    budget: "Estimation: 15M DZD",
+    reference: "AO-PROD-2026-042",
+    location: "Hassi Messaoud, Ouargla",
+    requirements: [
+       "Certificat de qualification de catégorie V minimum.",
+       "Expérience prouvée de 5 ans en maintenance de turbines Frame 5.",
+       "Équipe technique disponible 24/7 pour les interventions d'urgence.",
+       "Garantie de 12 mois sur les pièces de rechange fournies."
+    ],
+    documents: [
+       { name: "Cahier des charges technique.pdf", size: "2.4 MB" },
+       { name: "Conditions générales.pdf", size: "1.1 MB" },
+       { name: "Annexes financières.xlsx", size: "450 KB" }
+    ]
+  };
+
+  const handleResponse = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSuccess(true);
+    setTimeout(() => {
+      navigate('/dashboard?tab=orders');
+    }, 2000);
+  };
+
+  if (isSuccess) {
+     return (
+       <div className="min-h-screen bg-neutral-bg flex items-center justify-center p-4">
+         <motion.div 
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="bg-white p-12 max-w-md w-full border border-gray-100 shadow-2xl text-center"
+         >
+           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
+             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+           </div>
+           <h2 className="text-3xl font-black text-primary uppercase tracking-tighter mb-4">Réponse Soumise !</h2>
+           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+             Votre proposition technique et commerciale a été envoyée avec succès à {tender.company}.
+           </p>
+           <div className="mt-8 pt-8 border-t border-gray-50">
+              <p className="text-[10px] font-black text-primary uppercase animate-pulse">Redirection vers votre dashboard...</p>
+           </div>
+         </motion.div>
+       </div>
+     );
+  }
+
+  return (
+    <div className={cn("min-h-screen bg-neutral-bg pb-20", i18n.language === 'ar' && "font-arabic")}>
+      {/* Dynamic Header */}
+      <div className="bg-primary pt-10 pb-20 text-white overflow-hidden relative">
+         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+         
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2 text-white/50 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest mb-10 group"
+            >
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Retour à la liste</span>
+            </button>
+
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+               <div className="max-w-3xl">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <span className={cn(
+                      "px-3 py-1 text-[9px] font-black uppercase tracking-widest flex items-center space-x-2",
+                      tender.type === 'Public' ? "bg-blue-500 text-white" : "bg-purple-500 text-white"
+                    )}>
+                      {tender.type === 'Public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      <span>{tender.type}</span>
+                    </span>
+                    <span className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest">
+                       {tender.status}
+                    </span>
+                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-4">Réf: {tender.reference}</span>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none mb-8">
+                    {tender.title}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-8">
+                     <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                           <Building2 className="h-5 w-5 text-secondary" />
+                        </div>
+                        <div>
+                           <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">ÉMETTEUR</p>
+                           <p className="text-xs font-black uppercase">{tender.company}</p>
+                        </div>
+                     </div>
+                     <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                           <Calendar className="h-5 w-5 text-secondary" />
+                        </div>
+                        <div>
+                           <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">DATE DE FIN</p>
+                           <p className="text-xs font-black uppercase">{tender.deadline}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               <div className="bg-white/10 backdrop-blur-md p-8 border border-white/10 rounded-none shrink-0 min-w-[300px]">
+                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4">Urgence & Statut</p>
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white/60">Temps restant</span>
+                        <span className="text-lg font-black text-secondary uppercase font-mono">12 JOURS</span>
+                     </div>
+                     <div className="h-2 w-full bg-white/5 overflow-hidden">
+                        <div className="h-full bg-secondary w-2/3" />
+                     </div>
+                     <button 
+                       onClick={() => setIsResponding(true)}
+                       className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-xl shadow-secondary/20"
+                     >
+                        Soumettre une offre
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-8">
+               {/* Description */}
+               <div className="bg-white p-10 border border-gray-100 shadow-xl">
+                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-8 flex items-center border-b border-gray-50 pb-4">
+                    <Info className="h-4 w-4 mr-2 text-secondary" />
+                    Description détaillée
+                  </h3>
+                  <p className="text-gray-500 font-medium leading-loose mb-10">
+                    {tender.description}
+                  </p>
+                  
+                  <h4 className="text-[11px] font-black text-primary uppercase tracking-widest mb-6">Exigences Techniques & Critères :</h4>
+                  <ul className="space-y-4">
+                    {tender.requirements.map((req, i) => (
+                      <li key={i} className="flex items-start space-x-4">
+                        <div className="w-1.5 h-1.5 bg-secondary mt-1.5 shrink-0" />
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider leading-relaxed">{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+               </div>
+
+               {/* Documents */}
+               <div className="bg-white p-10 border border-gray-100 shadow-xl">
+                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-8 flex items-center border-b border-gray-50 pb-4">
+                    <FileStack className="h-4 w-4 mr-2 text-secondary" />
+                    Pièces Jointes (Dossier d'Appel d'Offres)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {tender.documents.map((doc, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 group hover:bg-primary transition-all">
+                        <div className="flex items-center space-x-3">
+                           <FileText className="h-5 w-5 text-secondary" />
+                           <div>
+                              <p className="text-[10px] font-black text-primary group-hover:text-white uppercase truncate max-w-[150px]">{doc.name}</p>
+                              <p className="text-[8px] font-bold text-gray-400 uppercase">{doc.size}</p>
+                           </div>
+                        </div>
+                        <button className="p-2 text-gray-400 group-hover:text-white hover:text-secondary transition-colors">
+                           <Download className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            </div>
+
+            {/* Right Column / Respond Sidebar */}
+            <aside className="space-y-8">
+               {isResponding ? (
+                 <motion.div 
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   className="bg-white p-8 border-t-4 border-secondary shadow-2xl"
+                 >
+                   <h3 className="text-lg font-black text-primary uppercase tracking-tighter mb-8 italic underline decoration-secondary decoration-2">Votre Proposition</h3>
+                   <form onSubmit={handleResponse} className="space-y-6">
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">MONTANT HT (DZD)</label>
+                         <input required type="text" className="w-full bg-gray-50 border border-gray-100 px-4 py-3 text-xs font-bold font-mono outline-none focus:border-secondary transition-all" placeholder="00,000,000.00" />
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">DÉLAI D'EXÉCUTION</label>
+                         <input required type="text" className="w-full bg-gray-50 border border-gray-100 px-4 py-3 text-xs font-bold outline-none focus:border-secondary transition-all" placeholder="EX: 30 JOURS" />
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">NOTE DE SYNTHÈSE</label>
+                         <textarea className="w-full bg-gray-50 border border-gray-100 px-4 py-3 text-xs font-bold outline-none focus:border-secondary transition-all h-32 resize-none" placeholder="RÉSUMÉ DE VOTRE FORCE TECHNIQUE..." />
+                      </div>
+                      <div className="p-6 border-2 border-dashed border-gray-100 rounded-none text-center group hover:border-secondary transition-all cursor-pointer">
+                         <Download className="h-6 w-6 text-gray-200 mx-auto mb-2 group-hover:text-secondary group-hover:-rotate-12 transition-all" />
+                         <p className="text-[9px] font-black text-gray-400 uppercase group-hover:text-primary">Déposer Offre PDF</p>
+                      </div>
+                      <button type="submit" className="w-full bg-primary py-4 text-[10px] font-black text-white uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-3">
+                         <Send className="h-4 w-4" />
+                         <span>Soumettre Offre</span>
+                      </button>
+                      <button type="button" onClick={() => setIsResponding(false)} className="w-full py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-primary transition-all">Annuler</button>
+                   </form>
+                 </motion.div>
+               ) : (
+                 <div className="bg-white p-8 border border-gray-100 shadow-xl">
+                   <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-8 flex items-center border-b border-gray-50 pb-4">
+                    <ShieldCheck className="h-5 w-5 mr-3 text-emerald-500" />
+                    Garanties & Support
+                   </h3>
+                   <div className="space-y-6">
+                      <div className="flex items-start space-x-4">
+                         <div className="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+                            <CheckCircle2 className="h-4 w-4" />
+                         </div>
+                         <div>
+                            <p className="text-[11px] font-black text-primary uppercase mb-1">VÉRIFICATION KYC</p>
+                            <p className="text-[9px] text-gray-400 font-bold leading-tight uppercase">BÉNÉFICIEZ DE LA PROTECTION JURIDIQUE DE LA PLATEFORME.</p>
+                         </div>
+                      </div>
+                      <div className="flex items-start space-x-4 text-primary">
+                         <div className="p-2 bg-primary/5 rounded-lg">
+                            <MessageSquare className="h-4 w-4" />
+                         </div>
+                         <div>
+                            <p className="text-[11px] font-black uppercase mb-1">CHAT TECHNIQUE</p>
+                            <p className="text-[9px] text-gray-400 font-bold leading-tight uppercase">POSEZ VOS QUESTIONS DIRECTEMENT À L'ACHETEUR.</p>
+                         </div>
+                      </div>
+                      <button 
+                        onClick={() => setIsResponding(true)}
+                        className="w-full bg-secondary py-5 flex items-center justify-center space-x-3 group"
+                      >
+                         <span className="text-[11px] font-black text-white uppercase tracking-widest">RÉPONDRE À L'OFFRE</span>
+                         <Send className="h-4 w-4 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      </button>
+                   </div>
+                 </div>
+               )}
+
+               {/* Help Widget */}
+               <div className="bg-[#1a1a1a] p-10 text-white rounded-none">
+                  <User className="h-10 w-10 text-secondary mb-6" />
+                  <h3 className="text-xl font-black uppercase tracking-tighter mb-4">Besoin d'aide ?</h3>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8">
+                    Nos experts métiers vous accompagnent dans la rédaction de votre offre technique.
+                  </p>
+                  <button className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] hover:text-white transition-colors">
+                    Contacter un conseiller →
+                  </button>
+               </div>
+            </aside>
+         </div>
+      </div>
+    </div>
+  );
+};
+
+export default TenderDetail;

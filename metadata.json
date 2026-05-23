@@ -1,0 +1,7 @@
+{
+  "name": "Algeria Industry",
+  "description": "Plateforme B2B de l'industrie algérienne. Annuaire des industriels, catalogue produits et gestion des appels d'offres.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
