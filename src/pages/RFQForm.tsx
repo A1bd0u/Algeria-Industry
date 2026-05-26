@@ -4,7 +4,7 @@ import {
   FileText, Send, Building2, Package, 
   Plus, Trash2, ShieldCheck, Mail, 
   Phone, Globe, Zap, ArrowRight, CheckCircle2,
-  AlertCircle
+  AlertCircle, Loader2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -20,10 +20,30 @@ const RFQForm = () => {
   const addItem = () => setItems([...items, { id: Date.now(), name: '', qty: '' }]);
   const removeItem = (id: number) => items.length > 1 && setItems(items.filter(i => i.id !== id));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSuccess(true);
-    setTimeout(() => navigate('/dashboard?tab=orders'), 3000);
+    setIsSubmitting(true);
+    try {
+       const formData = new FormData(e.target as HTMLFormElement);
+       await fetch('/api/rfqs', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+            title: formData.get('title'),
+            desiredDate: formData.get('date'),
+            items,
+            budget: formData.get('budget')
+         })
+       });
+       setIsSuccess(true);
+       setTimeout(() => navigate('/dashboard?tab=orders'), 3000);
+    } catch (e) {
+       console.error("Erreur d'envoi", e);
+    } finally {
+       setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -272,10 +292,20 @@ const RFQForm = () => {
                    </button>
                    <button 
                      type="submit" 
-                     className="bg-secondary text-white px-12 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center space-x-3 shadow-2xl shadow-secondary/30"
+                     disabled={isSubmitting}
+                     className="bg-secondary text-white px-12 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center space-x-3 shadow-2xl shadow-secondary/30 disabled:opacity-70 disabled:hover:scale-100"
                    >
-                      <Send className="h-4 w-4" />
-                      <span>Envoyer la RFQ</span>
+                     {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Envoi en cours</span>
+                        </>
+                     ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          <span>Envoyer la RFQ</span>
+                        </>
+                     )}
                    </button>
                 </div>
               </motion.div>

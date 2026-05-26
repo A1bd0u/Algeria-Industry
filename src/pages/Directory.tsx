@@ -5,57 +5,7 @@ import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 
-// Mock data for companies
-const MOCK_COMPANIES = [
-  {
-    id: 1,
-    name: "Sonatrach",
-    sector: "Énergie / Hydrocarbures",
-    region: "Alger",
-    coordinates: { x: 45, y: 15 },
-    description: "Leader historique de l'industrie pétrolière et gazière en Algérie.",
-    certified: true,
-    logo: "https://picsum.photos/seed/sonatrach/100/100",
-    employees: "50,000+",
-    founded: "1963"
-  },
-  {
-    id: 2,
-    name: "Cevital",
-    sector: "Agroalimentaire",
-    region: "Béjaïa",
-    coordinates: { x: 55, y: 12 },
-    description: "Premier groupe privé algérien opérant dans l'agroalimentaire et l'industrie.",
-    certified: true,
-    logo: "https://picsum.photos/seed/cevital/100/100",
-    employees: "18,000",
-    founded: "1998"
-  },
-  {
-    id: 3,
-    name: "Condor Electronics",
-    sector: "Électronique / Électroménager",
-    region: "Bordj Bou Arreridj",
-    coordinates: { x: 52, y: 18 },
-    description: "Spécialiste de la fabrication de produits électroniques et technologiques.",
-    certified: true,
-    logo: "https://picsum.photos/seed/condor/100/100",
-    employees: "6,500",
-    founded: "2002"
-  },
-  {
-    id: 4,
-    name: "GICA Group",
-    sector: "Matériaux de construction",
-    region: "Alger",
-    coordinates: { x: 44, y: 16 },
-    description: "Groupe industriel des ciments d'Algérie, leader dans la production de ciment.",
-    certified: false,
-    logo: "https://picsum.photos/seed/gica/100/100",
-    employees: "12,000",
-    founded: "1984"
-  }
-];
+// No mock data needed anymore, using API
 
 import AdSpace from '../components/AdSpace';
 import { CompanySkeleton } from '../components/Skeleton';
@@ -69,12 +19,42 @@ const Directory = () => {
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>(t('common.all'));
 
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [error, setError] = useState('');
+
   useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const fetchCompanies = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/companies');
+        if (!res.ok) throw new Error("Erreur de récupération des entreprises");
+        const data = await res.json();
+        
+        const formattedData = data.map((c: any) => ({
+          ...c,
+          id: c.id,
+          name: c.name,
+          sector: c.activity_sector || "Non spécifié",
+          region: "Alger", // Mocking region if not in DB
+          coordinates: { x: Math.floor(Math.random() * 40) + 30, y: Math.floor(Math.random() * 40) + 10 },
+          description: c.description || "Aucune description",
+          certified: Math.random() > 0.5,
+          logo: `https://picsum.photos/seed/${c.id}/100/100`,
+          employees: "50-100",
+          founded: "2020"
+        }));
+        
+        setCompanies(formattedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCompanies();
   }, []);
-  
+
   const sectors = [t('categories.energy'), t('categories.agri'), t('categories.electronic'), t('categories.construction'), t('categories.mechanical'), t('categories.chemical')];
   const regions = ["Alger", "Oran", "Constantine", "Béjaïa", "Sétif", "Bordj Bou Arreridj"];
 
@@ -84,7 +64,7 @@ const Directory = () => {
     );
   };
 
-  const filteredCompanies = MOCK_COMPANIES.filter(company => {
+  const filteredCompanies = companies.filter(company => {
     // Certified filter
     if (isCertifiedOnly && !company.certified) return false;
     
@@ -276,6 +256,10 @@ const Directory = () => {
             {isLoading ? (
               <div className="grid grid-cols-1 gap-6">
                 {[...Array(5)].map((_, i) => <CompanySkeleton key={i} />)}
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold max-w-md float-left">
+                {error}
               </div>
             ) : filteredCompanies.length > 0 ? (
               viewMode === 'list' ? (

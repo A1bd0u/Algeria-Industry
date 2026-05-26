@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Newspaper, Calendar, User, Clock, 
   ChevronRight, Search, Tag, Share2, 
-  ArrowRight, TrendingUp, Bookmark
+  ArrowRight, TrendingUp, Bookmark, Loader2, AlertCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
@@ -10,77 +10,41 @@ import PageTransition from '../components/PageTransition';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const BLOG_POSTS = [
-  {
-    id: 1,
-    title: "L'Algérie accélère sa transition vers l'hydrogène vert",
-    excerpt: "Le gouvernement algérien a dévoilé une nouvelle feuille de route ambitieuse pour devenir un leader régional de l'énergie propre d'ici 2030.",
-    category: "Énergie",
-    author: "Karim Mansouri",
-    date: "28 Mars 2026",
-    readTime: "6 min",
-    image: "https://picsum.photos/seed/hydrogen/800/500",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Industrie 4.0 : Les PME algériennes sautent le pas",
-    excerpt: "De plus en plus de petites et moyennes entreprises adoptent des solutions d'automatisation et d'IA pour booster leur productivité.",
-    category: "Technologie",
-    author: "Sarah Benali",
-    date: "25 Mars 2026",
-    readTime: "4 min",
-    image: "https://picsum.photos/seed/tech/600/400",
-    featured: false
-  },
-  {
-    id: 3,
-    title: "Nouveau code de l'investissement : Premiers bilans",
-    excerpt: "Six mois après son entrée en vigueur, le nouveau cadre législatif attire déjà des investisseurs majeurs dans le secteur automobile.",
-    category: "Économie",
-    author: "Ahmed Ziri",
-    date: "20 Mars 2026",
-    readTime: "8 min",
-    image: "https://picsum.photos/seed/economy/600/400",
-    featured: false
-  },
-  {
-    id: 4,
-    title: "Salon de l'Énergie 2026 : Ce qu'il ne fallait pas manquer",
-    excerpt: "Retour sur les innovations marquantes présentées lors de la dernière édition du salon virtuel Algeria Industry.",
-    category: "Événements",
-    author: "Lina Kaci",
-    date: "15 Mars 2026",
-    readTime: "5 min",
-    image: "https://picsum.photos/seed/event/600/400",
-    featured: false
-  },
-  {
-    id: 5,
-    title: "La plasturgie en Algérie : Défis et opportunités",
-    excerpt: "Analyse d'un secteur en pleine mutation qui cherche à réduire sa dépendance aux importations de matières premières.",
-    category: "Industrie",
-    author: "Mourad Tahi",
-    date: "10 Mars 2026",
-    readTime: "7 min",
-    image: "https://picsum.photos/seed/plastic/600/400",
-    featured: false
-  }
-];
-
 const Blog = () => {
   const { t, i18n } = useTranslation();
   const CATEGORIES = [t('categories.all'), t('categories.energy'), t('categories.electronic'), t('categories.automotive'), t('categories.agri'), t('categories.construction')];
   const [activeCategory, setActiveCategory] = useState(t('categories.all'));
 
-  const filteredPosts = BLOG_POSTS.filter(post => {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/articles');
+        if (!res.ok) throw new Error("Erreur de récupération des articles");
+        const data = await res.json();
+        setPosts(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchArticles();
+  }, []);
+
+  const filteredPosts = posts.filter(post => {
     // Note: Mock categories might not match translated ones perfectly, 
     // for a real app we'd use category IDs
     const matchesCategory = activeCategory === t('categories.all') || post.category === activeCategory;
     return matchesCategory;
   });
 
-  const featuredPost = BLOG_POSTS.find(p => p.featured);
+  const featuredPost = posts.find(p => p.featured);
   const regularPosts = filteredPosts.filter(p => !p.featured || activeCategory !== t('categories.all'));
 
   return (
@@ -122,8 +86,21 @@ const Blog = () => {
             ))}
           </div>
 
-          {/* Featured Post */}
-          {activeCategory === t('categories.all') && featuredPost && (
+          {/* Blog Content */}
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center">
+               <Loader2 className="h-10 w-10 text-secondary animate-spin mb-4" />
+               <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{t('common.loading') || 'Chargement...'}</p>
+            </div>
+          ) : error ? (
+            <div className="py-20 flex flex-col items-center justify-center">
+               <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
+               <p className="text-[10px] font-black uppercase text-red-500 tracking-widest">{error}</p>
+            </div>
+          ) : (
+            <>
+              {/* Featured Post */}
+              {activeCategory === t('categories.all') && featuredPost && (
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -233,6 +210,8 @@ const Blog = () => {
               </motion.article>
             ))}
           </div>
+            </>
+          )}
 
           {/* Newsletter CTA */}
           <section className="mt-24 bg-primary p-12 rounded-[40px] text-white relative overflow-hidden text-center">

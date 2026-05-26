@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, Filter, SlidersHorizontal, Grid, List as ListIcon, 
   ChevronDown, ArrowRight, Zap, ShieldCheck, Star, 
-  Settings, Wrench, Package, Truck
+  Settings, Wrench, Package, Truck, Loader2, AlertCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -17,38 +17,40 @@ const Products = () => {
     'Tous', 'Usinage', 'Plasturgie', 'Énergie', 'BTP', 'Logistique', 'Agroalimentaire'
   ];
 
-  const products = [
-    {
-      id: 1,
-      name: 'Centre d\'usinage vertical CNC - V850',
-      brand: 'SIMENS',
-      price: 'Prix sur demande',
-      category: 'Usinage',
-      image: 'https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5?q=80&w=600&auto=format&fit=crop',
-      features: ['Précision 0.005mm', 'Table 1000kg', 'Vitesse 12000rpm'],
-      verified: true
-    },
-    {
-      id: 2,
-      name: 'Presse à Injecter Plastique - EcoPure 200',
-      brand: 'BOLE',
-      price: '12,500,000 DA',
-      category: 'Plasturgie',
-      image: 'https://images.unsplash.com/photo-1540575339264-569159347a1c?q=80&w=600&auto=format&fit=crop',
-      features: ['Basse consommation', 'Cycle rapide', 'Servo-moteur'],
-      verified: true
-    },
-    {
-      id: 3,
-      name: 'Générateur Industriel Diesel 500kVA',
-      brand: 'CAT',
-      price: '5,800,000 DA',
-      category: 'Énergie',
-      image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=600&auto=format&fit=crop',
-      features: ['Insonorisé', 'Autonomie 12h', 'Garantie 2 ans'],
-      verified: false
-    }
-  ];
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error("Erreur de récupération des produits");
+        let data = await res.json();
+        
+        // Formatter les données pour le catalogue complet (simuler des données supplémentaires)
+        data = data.map((p: any) => ({
+           id: p.id,
+           name: p.name,
+           brand: p.brand || 'Marque Standard',
+           price: p.price,
+           category: p.cat || p.category,
+           image: p.image || `https://picsum.photos/seed/${p.id}/600/400`,
+           features: p.features || ['Précision', 'Haute Performance'],
+           verified: p.verified !== undefined ? p.verified : true
+        }));
+
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
 
   return (
     <div className={cn("min-h-screen bg-neutral-bg pt-32 pb-20", i18n.language === 'ar' && "font-arabic")}>
@@ -155,6 +157,20 @@ const Products = () => {
               </button>
             </div>
 
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                 <Loader2 className="h-10 w-10 text-secondary animate-spin" />
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold flex items-center mb-8">
+                 <AlertCircle className="h-6 w-6 mr-3" />
+                 {error}
+              </div>
+            ) : products.length === 0 ? (
+               <div className="bg-white p-8 text-center border border-gray-200">
+                  <p className="text-gray-500 font-bold uppercase">Aucun produit trouvé.</p>
+               </div>
+            ) : (
             <div className={cn(
               "grid gap-6",
               view === 'grid' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
@@ -220,6 +236,7 @@ const Products = () => {
                 </motion.div>
               ))}
             </div>
+            )}
 
             {/* Pagination Placeholder */}
             <div className="mt-12 flex items-center justify-center space-x-2">

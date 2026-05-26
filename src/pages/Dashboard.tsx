@@ -46,47 +46,73 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  const [products, setProducts] = useState([
-    { id: 'p1', name: 'Pompe Industrielle PX1', cat: 'Hydraulique', price: '450,000 DZD', status: 'Actif', color: 'text-success' },
-    { id: 'p2', name: 'Groupe Électrogène 100kVA', cat: 'Énergie', price: '1,200,000 DZD', status: 'Actif', color: 'text-success' },
-    { id: 'p3', name: 'Compresseur d\'air', cat: 'Pneumatique', price: '280,000 DZD', status: 'En rupture', color: 'text-error' },
-  ]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  
+  useEffect(() => {
+     const fetchData = async () => {
+        try {
+           const [prodRes, msgRes, favRes] = await Promise.all([
+             fetch('/api/products'),
+             fetch('/api/messages'),
+             fetch('/api/favorites')
+           ]);
+           if (prodRes.ok) {
+              const data = await prodRes.json();
+              setProducts(data);
+           }
+           if (msgRes.ok) {
+              const data = await msgRes.json();
+              setMessages(data);
+           }
+           if (favRes.ok) {
+              const data = await favRes.json();
+              setFavorites(data);
+           }
+        } catch (e) {
+           console.error('Erreur API Dashboard:', e);
+        }
+     };
+     if (isAuthenticated) fetchData();
+  }, [isAuthenticated]);
 
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'them', text: 'Bonjour, nous avons bien reçu votre demande concernant les filtres HP-900. Voici notre première estimation technique.', time: '14:02' },
-    { id: 2, sender: 'me', text: 'Parfait, merci. Quel est le délai de livraison vers la zone industrielle de Rouiba ?', time: '14:05' },
-    { id: 3, sender: 'them', text: 'S\'agissant d\'un produit en stock, il faut compter 48h maximum après validation de la commande.', time: '14:10', file: 'DEVIS_#8492.PDF' },
-  ]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [selectedTender, setSelectedTender] = useState<any>(null);
   const [globalSearch, setGlobalSearch] = useState('');
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     
-    const msg = {
-      id: Date.now(),
-      sender: 'me',
-      text: newMessage,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    setMessages(prev => [...prev, msg]);
-    setNewMessage('');
-    
-    // Simulate auto-response
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const response = {
-        id: Date.now() + 1,
-        sender: 'them',
-        text: 'C\'est entendu. Souhaitez-vous que je vous envoie le bon de commande pour signature ?',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, response]);
-    }, 2000);
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newMessage })
+      });
+      
+      if (res.ok) {
+         const msg = await res.json();
+         setMessages(prev => [...prev, msg]);
+         setNewMessage('');
+         
+         // Simulate auto-response
+         setIsTyping(true);
+         setTimeout(() => {
+           setIsTyping(false);
+           const response = {
+             id: Date.now() + 1,
+             sender: 'them',
+             text: 'C\'est entendu. Souhaitez-vous que je vous envoie le bon de commande pour signature ?',
+             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+           };
+           setMessages(prev => [...prev, response]);
+         }, 2000);
+      }
+    } catch (e) {
+       console.error("Erreur envoi message", e);
+    }
   };
 
   const deleteProduct = (id: string) => {
@@ -118,10 +144,43 @@ const Dashboard = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const [tenders, setTenders] = useState([
-    { id: 't1', title: 'Maintenance Transfos 20kV', date: '12 Mai 2026', bids: 5, status: 'En cours', color: 'text-secondary' },
-    { id: 't2', title: 'Fourniture EPI Chantier', date: '05 Mai 2026', bids: 12, status: 'Clôturé', color: 'text-gray-400' },
-  ]);
+  const [tenders, setTenders] = useState<any[]>([]);
+  const [tendersLoading, setTendersLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTenders = async () => {
+      try {
+        setTendersLoading(true);
+        const res = await fetch('/api/tenders');
+        if (res.ok) {
+          let data = await res.json();
+          // Convert to expected UI format
+          data = data.map((t: any) => ({
+             id: t.id,
+             title: t.title,
+             date: new Date(t.created_at || t.deadline).toLocaleDateString(),
+             bids: Math.floor(Math.random() * 15), // mocked bids
+             status: t.status === 'open' ? 'Ouvert' : t.status,
+             color: t.status === 'open' ? 'text-secondary' : 'text-gray-400',
+             company: t.author?.company
+          }));
+          
+          if (user?.role === 'acheteur') {
+             // Only show user's company tenders
+             setTenders(data.filter((t: any) => t.company === user?.company));
+          } else {
+             // Fournisseur sees all
+             setTenders(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch tenders:', err);
+      } finally {
+        setTendersLoading(false);
+      }
+    };
+    if (isAuthenticated) fetchTenders();
+  }, [user, isAuthenticated]);
 
   const [companyInfo, setCompanyInfo] = useState({
     name: user?.company || '',
@@ -152,14 +211,14 @@ const Dashboard = () => {
     showNotify("Le produit a été ajouté avec succès au catalogue.");
   };
 
-  const [favorites, setFavorites] = useState([
-    { id: 1, name: 'Sider El Hadjar', category: 'Sidérurgie', location: 'Annaba', rating: 4.8 },
-    { id: 2, name: 'Condor Electronics', category: 'Électroménager', location: 'BBA', rating: 4.5 },
-  ]);
-
-  const removeFavorite = (id: number) => {
-    setFavorites(prev => prev.filter(f => f.id !== id));
-    showNotify("Favoris supprimé.");
+  const removeFavorite = async (id: number | string) => {
+    try {
+      await fetch(`/api/favorites/${id}`, { method: 'DELETE' });
+      setFavorites(prev => prev.filter(f => f.id !== id));
+      showNotify("Favoris supprimé.");
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const [profileInfo, setProfileInfo] = useState({
@@ -648,38 +707,49 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {filteredTenders.map((t) => (
-                <div key={t.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-between hover:border-secondary transition-all group">
-                   <div className="flex items-center space-x-6">
-                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-black text-primary uppercase italic">{t.title}</h4>
-                        <div className="flex items-center space-x-4 mt-1">
-                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Publié le: {t.date}</span>
-                           <span className="text-[9px] font-black text-secondary uppercase tracking-widest bg-secondary/5 px-2 py-0.5 rounded-full">{t.bids} OFFRES</span>
-                        </div>
-                      </div>
-                   </div>
-                   <div className="flex items-center space-x-6">
-                      <span className={cn("text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full bg-opacity-10", t.color.replace('text', 'bg'))}>
-                        {t.status}
-                      </span>
-                      <button 
-                        onClick={() => setSelectedTender(t)}
-                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                   </div>
-                </div>
-              ))}
-              {filteredTenders.length === 0 && (
-                <div className="py-20 text-center opacity-50">
-                  <Search className="h-10 w-10 mx-auto mb-4" />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Aucun résultat pour "{globalSearch}"</p>
-                </div>
+              {tendersLoading ? (
+                 <div className="bg-white p-10 rounded-[32px] border border-gray-100 flex flex-col items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-secondary animate-spin mb-4" />
+                    <span className="text-[10px] font-black uppercase text-gray-400">Chargement de vos données...</span>
+                 </div>
+              ) : (
+                <>
+                  {filteredTenders.map((t) => (
+                    <div key={t.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-between hover:border-secondary transition-all group">
+                       <div className="flex items-center space-x-6">
+                          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                            <FileText className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black text-primary uppercase italic">{t.title}</h4>
+                            <div className="flex items-center space-x-4 mt-1">
+                               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Publié le: {t.date}</span>
+                               <span className="text-[9px] font-black text-secondary uppercase tracking-widest bg-secondary/5 px-2 py-0.5 rounded-full">{t.bids} OFFRES</span>
+                            </div>
+                          </div>
+                       </div>
+                       <div className="flex items-center space-x-6">
+                          <span className={cn("text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full", t.status === 'Ouvert' ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400")}>
+                            {t.status}
+                          </span>
+                          <button 
+                            onClick={() => setSelectedTender(t)}
+                            className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+                  {filteredTenders.length === 0 && (
+                    <div className="py-20 text-center opacity-50">
+                      <Search className="h-10 w-10 mx-auto mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">
+                        {globalSearch ? `Aucun résultat pour "${globalSearch}"` : "Aucun appel d'offre"}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </motion.div>

@@ -1,66 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, MapPin, Video, Users, 
   Search, Filter, ChevronRight, Clock, 
-  Ticket, ExternalLink, Info, Bell
+  Ticket, ExternalLink, Info, Bell, Loader2, AlertCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import PageTransition from '../components/PageTransition';
 
-const EVENTS_DATA = [
-  {
-    id: 1,
-    title: "Salon International de l'Industrie (Algeria Industry 2026)",
-    type: "Physique",
-    category: "Salon",
-    date: "15 - 18 Juin 2026",
-    location: "Palais des Expositions (SAFEX), Alger",
-    description: "Le plus grand rassemblement industriel de l'année en Algérie. Plus de 500 exposants attendus.",
-    image: "https://picsum.photos/seed/expo/800/400",
-    status: "Bientôt"
-  },
-  {
-    id: 2,
-    title: "Webinaire : L'IA au service de la maintenance prédictive",
-    type: "En ligne",
-    category: "Webinaire",
-    date: "12 Avril 2026",
-    time: "10:00 - 11:30",
-    location: "Plateforme Zoom",
-    description: "Découvrez comment l'intelligence artificielle révolutionne la maintenance industrielle avec nos experts.",
-    image: "https://picsum.photos/seed/webinar/800/400",
-    status: "Ouvert"
-  },
-  {
-    id: 3,
-    title: "Forum de l'Investissement Industriel",
-    type: "Physique",
-    category: "Conférence",
-    date: "05 Mai 2026",
-    location: "Hôtel El Aurassi, Alger",
-    description: "Rencontre entre décideurs publics et investisseurs privés pour discuter du nouveau code de l'investissement.",
-    image: "https://picsum.photos/seed/forum/800/400",
-    status: "Bientôt"
-  },
-  {
-    id: 4,
-    title: "Atelier : Certification ISO 14001",
-    type: "En ligne",
-    category: "Formation",
-    date: "22 Avril 2026",
-    time: "14:00 - 17:00",
-    location: "Google Meet",
-    description: "Une session pratique pour comprendre les exigences de la norme environnementale.",
-    image: "https://picsum.photos/seed/training/800/400",
-    status: "Ouvert"
-  }
-];
-
 const Events = () => {
   const [activeType, setActiveType] = useState('Tous');
+  
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filteredEvents = EVENTS_DATA.filter(event => {
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/events');
+        if (!res.ok) throw new Error("Erreur de récupération des événements");
+        const data = await res.json();
+        setEvents(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchEvents();
+  }, []);
+
+  const filteredEvents = events.filter(event => {
     const matchesType = activeType === 'Tous' || event.type === activeType;
     return matchesType;
   });
@@ -117,8 +90,19 @@ const Events = () => {
           </div>
 
           {/* Events Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {filteredEvents.map((event, i) => (
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center">
+               <Loader2 className="h-10 w-10 text-secondary animate-spin mb-4" />
+               <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Chargement...</p>
+            </div>
+          ) : error ? (
+            <div className="py-20 flex flex-col items-center justify-center">
+               <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
+               <p className="text-[10px] font-black uppercase text-red-500 tracking-widest">{error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {filteredEvents.map((event, i) => (
               <motion.div 
                 key={event.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -186,6 +170,7 @@ const Events = () => {
               </motion.div>
             ))}
           </div>
+          )}
 
           {/* Organizer CTA */}
           <section className="mt-24 bg-neutral-bg border-2 border-dashed border-gray-200 p-12 rounded-[40px] text-center">

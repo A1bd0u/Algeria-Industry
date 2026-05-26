@@ -1,52 +1,90 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Building2, MapPin, Globe, Mail, Phone, 
   Award, Users, Calendar, FileText, Package, 
   ChevronRight, ExternalLink, ShieldCheck, Star,
-  MessageSquare, Download, Share2, Heart
+  MessageSquare, Download, Share2, Heart,
+  Loader2, AlertCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 
-// Mock data for a single company
-const COMPANY_DATA = {
-  id: 1,
-  name: "Sonatrach",
-  fullName: "Société Nationale pour la Recherche, la Production, le Transport, la Transformation, et la Commercialisation des Hydrocarbures",
-  sector: "Énergie / Hydrocarbures",
-  region: "Alger",
-  address: "Djenane El Malik, Hydra, Alger, Algérie",
-  website: "www.sonatrach.com",
-  email: "contact@sonatrach.dz",
-  phone: "+213 (0) 21 54 70 00",
-  description: "Sonatrach est l'acteur majeur de l'industrie pétrolière et gazière en Algérie. Fondée en 1963, elle est aujourd'hui la plus grande entreprise d'Afrique. Ses activités couvrent l'ensemble de la chaîne de valeur : exploration, production, raffinage et pétrochimie.",
-  certified: true,
-  certifications: ["ISO 9001", "ISO 14001", "OHSAS 18001"],
-  employees: "50,000+",
-  founded: "1963",
-  rating: 4.9,
-  reviews: 156,
-  logo: "https://picsum.photos/seed/sonatrach/200/200",
-  banner: "https://picsum.photos/seed/oil-rig/1200/400",
-  products: [
-    { id: 101, name: "Gasoil Industriel", category: "Carburants" },
-    { id: 102, name: "Lubrifiants Haute Performance", category: "Chimie" },
-    { id: 103, name: "Bitume de Route", category: "Construction" }
-  ],
-  tenders: [
-    { id: 201, title: "Maintenance turbines Frame 5", date: "15 Mars 2026" },
-    { id: 202, title: "Fourniture de vannes HP", date: "02 Mars 2026" }
-  ]
-};
-
 const CompanyProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState<'about' | 'products' | 'tenders'>('about');
+  
+  const [company, setCompany] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // In a real app, we would fetch data based on the ID
-  const company = COMPANY_DATA;
+  useEffect(() => {
+    const fetchCompany = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/companies/${id}`);
+        if (!res.ok) throw new Error("Erreur de récupération de l'entreprise");
+        let data = await res.json();
+        
+        // Mock some dynamic data for the view
+        data = {
+          ...data,
+          fullName: data.name + " Algérie",
+          sector: data.activity_sector || "Énergie / Hydrocarbures",
+          region: "Alger",
+          address: "123 Rue de l'Industrie, Alger",
+          website: `www.${data.name?.toLowerCase().replace(/\s+/g,'')}.com`,
+          email: `contact@${data.name?.toLowerCase().replace(/\s+/g,'')}.dz`,
+          phone: "+213 21 00 00 00",
+          description: data.description || "Aucune description fournie.",
+          certified: Math.random() > 0.5,
+          certifications: ["ISO 9001", "ISO 14001"],
+          employees: "1,000+",
+          founded: "2010",
+          rating: 4.8,
+          reviews: 120,
+          logo: `https://picsum.photos/seed/${data.id}/200/200`,
+          banner: `https://picsum.photos/seed/${data.id}-banner/1200/400`,
+          products: [
+             { id: 101, name: "Produit A", category: "Équipement" },
+             { id: 102, name: "Produit B", category: "Outillage" }
+          ],
+          tenders: [
+             { id: 201, title: "Appel d'offre 1", date: "15 Juin 2026" }
+          ]
+        };
+
+        setCompany(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (id) fetchCompany();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex flex-col items-center justify-center">
+         <Loader2 className="h-12 w-12 text-secondary animate-spin mb-4" />
+         <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Chargement du profil...</p>
+      </div>
+    );
+  }
+
+  if (error || !company) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex flex-col items-center justify-center p-4">
+         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+         <p className="text-[10px] font-black uppercase text-red-500 tracking-widest mb-6">{error || "Entreprise introuvable"}</p>
+         <button onClick={() => navigate('/directory')} className="btn-primary">Retour à l'annuaire</button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-neutral-bg min-h-screen pb-20">

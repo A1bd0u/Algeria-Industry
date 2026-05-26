@@ -43,24 +43,46 @@ const ConsolePro = () => {
   const { profile, visits, events, totalTimeSpentSec, clearLogs } = useTracking();
   const [activeTab, setActiveTab] = useState('gov-overview');
   const [showArticleForm, setShowArticleForm] = useState(false);
-  const [pendingKYC, setPendingKYC] = useState([
-    { id: 'kyc-1', name: 'Global Tech Oran', activity: 'Composants Électriques', date: 'Il y a 2h', docs: ['RC', 'NIF', 'AI'] },
-    { id: 'kyc-2', name: 'Mecanique du Sud', activity: 'Maintenance Industrielle', date: 'Il y a 5h', docs: ['RC', 'NIF'] },
-  ]);
+  const [pendingKYC, setPendingKYC] = useState<any[]>([]);
   const [approvedKYC, setApprovedKYC] = useState<string[]>([]);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  const handleApproveKYC = (id: string, name: string) => {
-    setPendingKYC(prev => prev.filter(c => c.id !== id));
-    setApprovedKYC(prev => [...prev, id]);
-    setNotification({ message: `L'entreprise ${name} a été validée avec succès.`, type: 'success' });
-    setTimeout(() => setNotification(null), 3000);
+  useEffect(() => {
+    const fetchKyc = async () => {
+      try {
+        const res = await fetch('/api/kyc');
+        if (res.ok) {
+           const data = await res.json();
+           setPendingKYC(data);
+        }
+      } catch (e) {
+        console.error('Error fetching KYC:', e);
+      }
+    };
+    fetchKyc();
+  }, []);
+
+  const handleApproveKYC = async (id: string, name: string) => {
+    try {
+      await fetch(`/api/kyc/${id}/approve`, { method: 'POST' });
+      setPendingKYC(prev => prev.filter(c => c.id !== id));
+      setApprovedKYC(prev => [...prev, id]);
+      setNotification({ message: `L'entreprise ${name} a été validée avec succès.`, type: 'success' });
+      setTimeout(() => setNotification(null), 3000);
+    } catch (e) {
+       console.error(e);
+    }
   };
 
-  const handleRejectKYC = (id: string, name: string) => {
-    setPendingKYC(prev => prev.filter(c => c.id !== id));
-    setNotification({ message: `La demande de ${name} a été rejetée.`, type: 'error' });
-    setTimeout(() => setNotification(null), 3000);
+  const handleRejectKYC = async (id: string, name: string) => {
+    try {
+      await fetch(`/api/kyc/${id}/reject`, { method: 'POST' });
+      setPendingKYC(prev => prev.filter(c => c.id !== id));
+      setNotification({ message: `La demande de ${name} a été rejetée.`, type: 'error' });
+      setTimeout(() => setNotification(null), 3000);
+    } catch (e) {
+       console.error(e);
+    }
   };
 
   const statsAdmin = [
@@ -577,45 +599,6 @@ const ConsolePro = () => {
                      ))}
                   </tbody>
                </table>
-            </div>
-          </motion.div>
-        );
-
-      case 'gov-companies':
-        return (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-            <h3 className="text-2xl font-black text-primary uppercase tracking-tighter italic mb-8">Vérifications KYC <span className="text-secondary">(En attente)</span></h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {[
-                 { name: 'Global Tech Oran', activity: 'Composants Électriques', date: 'Il y a 2h', docs: ['RC', 'NIF', 'AI'] },
-                 { name: 'Mecanique du Sud', activity: 'Maintenance Industrielle', date: 'Il y a 5h', docs: ['RC', 'NIF'] },
-               ].map((c, i) => (
-                 <div key={i} className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform"><Building2 className="h-20 w-20" /></div>
-                    <div className="relative z-10">
-                       <span className="text-[9px] font-black text-secondary uppercase tracking-[0.2em] mb-2 block">{c.activity}</span>
-                       <h4 className="text-xl font-black text-primary uppercase tracking-tighter mb-1">{c.name}</h4>
-                       <p className="text-[10px] font-bold text-gray-400 uppercase mb-8">Soumis le {c.date}</p>
-                       
-                       <div className="space-y-3 mb-8">
-                          <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-2">Documents fournis :</p>
-                          <div className="flex flex-wrap gap-2">
-                             {c.docs.map(d => (
-                               <div key={d} className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg flex items-center space-x-2">
-                                  <FileText className="h-3 w-3 text-secondary" />
-                                  <span className="text-[9px] font-black text-primary uppercase">{d}.PDF</span>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-
-                       <div className="flex space-x-3">
-                          <button className="flex-1 bg-primary text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all">Approuver</button>
-                          <button className="flex-1 border border-gray-100 text-gray-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-red-500 hover:border-red-500 transition-all">Rejeter</button>
-                       </div>
-                    </div>
-                 </div>
-               ))}
             </div>
           </motion.div>
         );

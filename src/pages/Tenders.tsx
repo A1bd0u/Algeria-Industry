@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, FileText, Calendar, Building2, Clock, CheckCircle2, ChevronRight, Plus, Lock, Globe, AlertCircle, Send, Package, Users, Mail, Phone, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Search, Filter, FileText, Calendar, Building2, Clock, CheckCircle2, ChevronRight, Plus, Lock, Globe, AlertCircle, Send, Package, Users, Mail, Phone, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -7,69 +7,18 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 import AdSpace from '../components/AdSpace';
 
-// Mock data for tenders
-const MOCK_TENDERS = [
-  {
-    id: 1,
-    title: "Maintenance préventive des turbines à gaz",
-    company: "Sonatrach - Division Production",
-    sector: "Énergie",
-    deadline: "2026-05-15",
-    type: "Public",
-    status: "Ouvert",
-    description: "Prestation de maintenance annuelle pour 4 turbines à gaz Frame 5 situées sur le site de Hassi Messaoud.",
-    budget: "Estimation: 15M DZD",
-    responses: 12
-  },
-  {
-    id: 2,
-    title: "Fourniture de composants électroniques CMS",
-    company: "ENIE Electronics",
-    sector: "Électronique",
-    deadline: "2026-04-30",
-    type: "Privé",
-    status: "Ouvert",
-    description: "Recherche de fournisseurs pour l'approvisionnement trimestriel en résistances, condensateurs et microcontrôleurs.",
-    budget: "Confidentiel",
-    responses: 5
-  },
-  {
-    id: 3,
-    title: "Construction d'un entrepôt frigorifique 2000m²",
-    company: "Cevital Logistique",
-    sector: "Construction / BTP",
-    deadline: "2026-06-10",
-    type: "Public",
-    status: "Ouvert",
-    description: "Travaux de génie civil et installation de systèmes de réfrigération pour un nouvel entrepôt à Sétif.",
-    budget: "Estimation: 45M DZD",
-    responses: 8
-  },
-  {
-    id: 4,
-    title: "Audit de sécurité informatique et Pentest",
-    company: "Condor Group",
-    sector: "Services / IT",
-    deadline: "2026-04-15",
-    type: "Privé",
-    status: "En cours d'évaluation",
-    description: "Audit complet de l'infrastructure réseau et tests d'intrusion sur les applications web du groupe.",
-    budget: "Confidentiel",
-    responses: 14
-  },
-  {
-    id: 5,
-    title: "Installation de panneaux solaires 100kWp",
-    company: "GICA Ciments",
-    sector: "Énergies Renouvelables",
-    deadline: "2026-05-20",
-    type: "Public",
-    status: "Ouvert",
-    description: "Projet pilote pour l'autoconsommation énergétique de l'usine de ciment de Chlef.",
-    budget: "Estimation: 12M DZD",
-    responses: 3
-  }
-];
+interface Tender {
+  id: string;
+  title: string;
+  description: string;
+  budget: number | string;
+  deadline: string;
+  status: string;
+  category: string;
+  author: { name: string; company: string; };
+  type?: string; 
+  responses?: number;
+}
 
 const Tenders = () => {
   const { t, i18n } = useTranslation();
@@ -77,6 +26,9 @@ const Tenders = () => {
   const [view, setView] = useState<'list' | 'create'>('list');
   const [selectedType, setSelectedType] = useState('Tous');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     contactName: '',
@@ -89,6 +41,29 @@ const Tenders = () => {
     description: '',
     priority: 'Normal'
   });
+
+  useEffect(() => {
+    const fetchTenders = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/tenders');
+        if (!res.ok) throw new Error("Erreur de récupération des appels d'offres");
+        const data = await res.json();
+        const formattedData = data.map((t: any) => ({
+          ...t,
+          type: t.category === 'Public' ? 'Public' : 'Privé', // Simulating type from category for now
+          responses: Math.floor(Math.random() * 20), // Mock responses format
+          formattedDeadline: new Date(t.deadline).toLocaleDateString()
+        }));
+        setTenders(formattedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTenders();
+  }, []);
 
   useEffect(() => {
     const product = searchParams.get('product');
@@ -227,7 +202,20 @@ const Tenders = () => {
             >
               {/* Main List */}
               <div className="lg:col-span-2 space-y-4">
-                {MOCK_TENDERS
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-20">
+                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                  </div>
+                ) : error ? (
+                  <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold">
+                    {error}
+                  </div>
+                ) : tenders.length === 0 ? (
+                   <div className="bg-white p-8 text-center border border-gray-200">
+                      <p className="text-gray-500 font-bold uppercase">Aucun appel d'offre trouvé.</p>
+                   </div>
+                ) : (
+                  tenders
                   .filter(t => selectedType === 'Tous' || t.type === selectedType)
                   .map((tender, index) => (
                   <motion.div 
@@ -249,20 +237,20 @@ const Tenders = () => {
                           </span>
                           <span className={cn(
                             "px-3 py-1 text-[9px] font-black uppercase tracking-widest border",
-                            tender.status === 'Ouvert' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-orange-50 text-orange-600 border-orange-100"
+                            tender.status === 'open' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-orange-50 text-orange-600 border-orange-100"
                           )}>
-                            {tender.status}
+                            {tender.status === 'open' ? 'Ouvert' : tender.status}
                           </span>
                         </div>
                         <h3 className="text-2xl font-black text-primary group-hover:text-secondary transition-colors mb-4 uppercase tracking-tighter leading-tight">{tender.title}</h3>
                         <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-6">
                           <div className="flex items-center space-x-2">
                             <Building2 className="h-4 w-4 text-secondary" />
-                            <span className="text-primary">{tender.company}</span>
+                            <span className="text-primary">{tender.author?.company || 'Anonyme'}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <FileText className="h-4 w-4 text-secondary" />
-                            <span>{tender.sector}</span>
+                            <span>{tender.category}</span>
                           </div>
                         </div>
                         <p className="text-gray-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2">{tender.description}</p>
@@ -273,7 +261,7 @@ const Tenders = () => {
                             <Calendar className="h-3.5 w-3.5 text-secondary" />
                             <span>Date limite</span>
                           </div>
-                          <p className="text-2xl font-black text-primary font-mono">{tender.deadline}</p>
+                          <p className="text-2xl font-black text-primary font-mono">{(tender as any).formattedDeadline || tender.deadline}</p>
                         </div>
                         <Link to={`/tenders/${tender.id}`} className="btn-primary w-full sm:w-auto py-3 px-8 flex items-center justify-center space-x-3 group/btn text-center">
                           <span>Répondre</span>
@@ -285,17 +273,17 @@ const Tenders = () => {
                       <div className="flex items-center space-x-6">
                         <span className="flex items-center space-x-2">
                           <Clock className="h-4 w-4 text-secondary" />
-                          <span>Publié il y a 2 jours</span>
+                          <span>Publié récemment</span>
                         </span>
                         <span className="flex items-center space-x-2">
                           <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                           <span className="text-primary">{tender.responses} réponses reçues</span>
                         </span>
                       </div>
-                      <span className="font-black text-secondary bg-secondary/5 px-3 py-1">{tender.budget}</span>
+                      <span className="font-black text-secondary bg-secondary/5 px-3 py-1">Budget: {tender.budget} DA</span>
                     </div>
                   </motion.div>
-                ))}
+                )))}
               </div>
 
               {/* Sidebar Info */}

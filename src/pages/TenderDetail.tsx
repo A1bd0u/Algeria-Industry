@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
@@ -17,32 +17,49 @@ const TenderDetail = () => {
   const [isResponding, setIsResponding] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Mock detail data
-  const tender = {
-    id: 1,
-    title: "Maintenance préventive des turbines à gaz",
-    company: "Sonatrach - Division Production",
-    sector: "Énergie",
-    deadline: "2026-05-15",
-    published: "2026-04-10",
-    type: "Public",
-    status: "Ouvert",
-    description: "Prestation de maintenance annuelle pour 4 turbines à gaz Frame 5 situées sur le site de Hassi Messaoud. Le contrat inclut l'inspection périodique, le remplacement des filtres et l'équilibrage dynamique des rotors.",
-    budget: "Estimation: 15M DZD",
-    reference: "AO-PROD-2026-042",
-    location: "Hassi Messaoud, Ouargla",
-    requirements: [
-       "Certificat de qualification de catégorie V minimum.",
-       "Expérience prouvée de 5 ans en maintenance de turbines Frame 5.",
-       "Équipe technique disponible 24/7 pour les interventions d'urgence.",
-       "Garantie de 12 mois sur les pièces de rechange fournies."
-    ],
-    documents: [
-       { name: "Cahier des charges technique.pdf", size: "2.4 MB" },
-       { name: "Conditions générales.pdf", size: "1.1 MB" },
-       { name: "Annexes financières.xlsx", size: "450 KB" }
-    ]
-  };
+  const [tender, setTender] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const fetchTender = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/tenders/${id}`);
+        if (!res.ok) throw new Error("Erreur de récupération de l'appel d'offres");
+        const data = await res.json();
+        
+        // Map to expected structure for the UI
+        setTender({
+          id: data.id,
+          title: data.title,
+          company: data.author?.company || "Entreprise Inconnue",
+          sector: data.category || "General",
+          deadline: new Date(data.deadline).toLocaleDateString(),
+          published: data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A',
+          type: data.type || "Public",
+          status: data.status === 'open' ? 'Ouvert' : data.status || 'Inconnu',
+          description: data.description,
+          budget: data.budget ? `Budget: ${data.budget} DZD` : "Non spécifié",
+          reference: `AO-${data.id?.substring(0, 8) || '0000'}`,
+          location: "Algérie",
+          requirements: [
+             "Certificat de qualification de catégorie V minimum.",
+             "Expérience prouvée de 5 ans.",
+             "Garantie de 12 mois sur les pièces de rechange fournies."
+          ],
+          documents: [
+             { name: "Cahier des charges technique.pdf", size: "2.4 MB" }
+          ]
+        });
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (id) fetchTender();
+  }, [id]);
 
   const handleResponse = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +68,29 @@ const TenderDetail = () => {
       navigate('/dashboard?tab=orders');
     }, 2000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex items-center justify-center p-4">
+         <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-gray-200 rounded-full mb-4"></div>
+            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Chargement...</p>
+         </div>
+      </div>
+    );
+  }
+
+  if (error || !tender) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex items-center justify-center p-4">
+         <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold max-w-md text-center">
+            <AlertCircle className="h-10 w-10 mx-auto mb-4" />
+            <p className="uppercase tracking-widest text-xs">{error || "Introuvable"}</p>
+            <button onClick={() => navigate('/tenders')} className="mt-6 text-[10px] uppercase font-black underline">Retour aux appels d'offres</button>
+         </div>
+      </div>
+    );
+  }
 
   if (isSuccess) {
      return (
