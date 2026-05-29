@@ -14,6 +14,7 @@ import eventRoutes from './server/routes/events';
 import rfqRoutes from './server/routes/rfqs';
 import kycRoutes from './server/routes/kyc';
 import favoriteRoutes from './server/routes/favorites';
+import adRoutes from './server/routes/ads';
 
 async function startServer() {
   const app = express();
@@ -34,6 +35,7 @@ async function startServer() {
   app.use('/api/rfqs', rfqRoutes);
   app.use('/api/kyc', kycRoutes);
   app.use('/api/favorites', favoriteRoutes);
+  app.use('/api/ads', adRoutes);
 
   // Vite middleware setup
   if (process.env.NODE_ENV !== 'production') {

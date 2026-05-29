@@ -14,35 +14,13 @@ router.get('/', async (req, res) => {
       .select('*, users(name, email)');
 
     if (error) {
-      console.error('Supabase Error (Companies GET):', error);
-      throw new Error("Erreur de db");
+      throw error;
     }
 
-    const mappedCompanies = companies?.map((c: any) => ({
-      ...c,
-      owner: c.users,
-      users: undefined
-    })) || [];
-
-    return res.json(mappedCompanies);
+    return res.json(companies || []);
   } catch (err: any) {
-    console.error('Supabase fallback:', err.message);
-    return res.json([
-      {
-        id: 'mock-1',
-        name: 'Sonatrach',
-        activity_sector: 'Énergie',
-        description: 'Entreprise nationale pour la recherche, la production, le transport, la transformation et la commercialisation des hydrocarbures.',
-        certified: true
-      },
-      {
-        id: 'mock-2',
-        name: 'Cevital',
-        activity_sector: 'Agroalimentaire',
-        description: 'Premier groupe privé algérien, présent dans divers secteurs.',
-        certified: true
-      }
-    ]);
+    console.error("Supabase Error GET /companies:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -53,30 +31,18 @@ router.get('/:id', async (req, res) => {
     
     const { data: company, error } = await supabase
       .from('companies')
-      .select('*, users(name, email)')
+      .select('*, author:users(name, email)')
       .eq('id', req.params.id)
       .single();
 
     if (error) {
-      console.error('Supabase Error (Company GET):', error);
-      throw new Error("Erreur");
+      throw error;
     }
 
-    const mappedCompany = {
-      ...company,
-      owner: company.users,
-      users: undefined
-    };
-
-    return res.json(mappedCompany);
+    return res.json(company);
   } catch (err: any) {
-    console.error('Supabase fallback:', err.message);
-    return res.json({
-      id: req.params.id,
-      name: 'Entreprise Exemple',
-      activity_sector: 'Industrie',
-      description: 'Ceci est un exemple car la base de données n\'est pas encore configurée.'
-    });
+    console.error("Supabase Error GET /companies/:id:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -121,7 +87,7 @@ router.post('/', async (req, res) => {
       return res.status(201).json(data);
     }
   } catch (err: any) {
-    console.error('Supabase Error (Company POST):', err.message);
+    // Supabase Error
     return res.status(500).json({ error: "Erreur lors de la sauvegarde de l'entreprise." });
   }
 });

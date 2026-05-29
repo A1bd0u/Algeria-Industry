@@ -14,17 +14,13 @@ router.get('/', async (req, res) => {
       .select('*');
 
     if (error) {
-       console.error('Supabase Error (Favorites GET):', error);
-       throw new Error("Erreur DB");
+       throw error;
     }
     
     return res.json(favs || []);
   } catch(e: any) {
-    console.error('Fallback Favorites:', e.message);
-    return res.json([
-      { id: 1, name: 'Sider El Hadjar', category: 'Sidérurgie', location: 'Annaba', rating: 4.8 },
-      { id: 2, name: 'Condor Electronics', category: 'Électroménager', location: 'BBA', rating: 4.5 },
-    ]);
+    console.error("Supabase Error GET /favorites:", e);
+    return res.status(500).json({ error: e.message });
   }
 });
 
@@ -42,26 +38,28 @@ router.delete('/:id', async (req, res) => {
     if (error) throw error;
     return res.json({ success: true });
   } catch (err: any) {
-    return res.json({ success: true, message: "Mock supprimé" });
+    console.error("Supabase Error DELETE /favorites/:id:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
 // POST /api/favorites
 router.post('/', async (req, res) => {
-  const { name, category, location, rating } = req.body;
+  const { item_type, item_id, user_id } = req.body;
   try {
     const supabase = getSupabase();
     
     const { data, error } = await supabase
       .from('favorites')
-      .insert([{ name, category, location, rating }])
+      .insert([{ item_type, item_id, user_id: user_id || null }])
       .select()
       .single();
       
     if (error) throw error;
     return res.json(data);
   } catch (err: any) {
-    return res.json({ id: Date.now(), name, category, location, rating, success: true });
+    console.error("Supabase Error POST /favorites:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

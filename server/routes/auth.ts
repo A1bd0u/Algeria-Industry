@@ -51,44 +51,34 @@ router.post('/login', async (req, res) => {
   try {
     const supabase = getSupabase();
     
-    // Try to find user in Supabase
-    const { data: foundUser, error } = await supabase
+    // Check if exists
+    const { data: user, error } = await supabase
       .from('users')
       .select('*')
       .ilike('email', email)
       .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Supabase DB error:', error);
-      return res.status(500).json({ error: 'Erreur de base de données.' });
+    if (!user || error) {
+      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
-    if (!foundUser) {
-      return res.status(401).json({ error: 'Identifiants incorrects ou compte inexistant.' });
+    const isValid = await bcrypt.compare(password, user.passwordHash || '');
+    if (!isValid) {
+      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
-    // Verify password securely using bcrypt
-    // Un-commented for real professional usage.
-    const isMatch = await bcrypt.compare(password, foundUser.passwordHash);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Identifiants incorrects' });
-    }
+    const payload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      company: user.company,
+      role: user.role,
+      isVerified: Boolean(user.isVerified)
+    };
 
-    const token = jwt.sign(
-      {
-        id: foundUser.id,
-        name: foundUser.name,
-        email: foundUser.email,
-        company: foundUser.company,
-        role: foundUser.role,
-        isVerified: Boolean(foundUser.isVerified)
-      },
-      JWT_SECRET,
-      { expiresIn: '72h' }
-    );
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '72h' });
 
     const isProduction = process.env.NODE_ENV === 'production';
-
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
@@ -96,30 +86,10 @@ router.post('/login', async (req, res) => {
       maxAge: 72 * 60 * 60 * 1000
     });
 
-    return res.json({ user: foundUser });
+    return res.json({ user: payload });
   } catch (err: any) {
-    console.warn("Supabase not fully configured:", err.message);
-    
-    // TEMPORARY FALLBACK FOR PREVIEW WHEN KEYS ARE MISSING
-    // Automatically accept any login for demonstration if Supabase is missing
-    const role = email.toLowerCase().includes('admin') ? 'admin' : (email.toLowerCase().includes('fournisseur') ? 'fournisseur' : 'acheteur');
-    const newId = 'user-demo-' + Math.random().toString(36).substring(2, 9);
-    
-    const token = jwt.sign(
-      {
-        id: newId,
-        name: email.split('@')[0].toUpperCase(),
-        email: email,
-        company: 'Demo Company (No DB)',
-        role: role,
-        isVerified: true
-      },
-      JWT_SECRET,
-      { expiresIn: '72h' }
-    );
-
-    res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 72 * 60 * 60 * 1000 });
-    return res.json({ user: jwt.decode(token) });
+    console.error("Login Error:", err);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -152,35 +122,40 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     
-    const newId = 'user-' + Math.random().toString(36).substring(2, 9);
     const cRoles = role || 'acheteur';
     const cCompany = company || 'Entreprise DZ';
     
-    const newUser = {
-      id: newId,
-      name: name,
-      email: email,
-      company: cCompany,
-      role: cRoles,
-      isVerified: false
-    };
-
-    const { error: insertError } = await supabase
+    const { data: newUserRow, error: insertError } = await supabase
       .from('users')
       .insert([
         {
-          ...newUser,
-          passwordHash: hashedPassword
+          name: name,
+          email: email,
+          company: cCompany,
+          role: cRoles,
+          passwordHash: hashedPassword,
+          isVerified: false
         }
-      ]);
+      ])
+      .select()
+      .single();
       
-    if (insertError) {
-      console.error('Supabase Error:', insertError);
+    if (insertError || !newUserRow) {
+      console.error(insertError);
       return res.status(500).json({ error: "Erreur lors de l'inscription dans la base de données" });
     }
 
+    const payload = {
+        id: newUserRow.id,
+        name: newUserRow.name,
+        email: newUserRow.email,
+        company: newUserRow.company,
+        role: newUserRow.role,
+        isVerified: false
+    };
+
     const token = jwt.sign(
-      newUser,
+      payload,
       JWT_SECRET,
       { expiresIn: '72h' }
     );
@@ -194,10 +169,10 @@ router.post('/register', async (req, res) => {
       maxAge: 72 * 60 * 60 * 1000
     });
 
-    return res.json({ success: true, user: newUser, message: "Inscription réussie avec Supabase" });
+    return res.json({ success: true, user: payload, message: "Inscription réussie avec Supabase" });
   } catch (err: any) {
-    console.error('Supabase fallback:', err.message);
-    return res.status(500).json({ error: "Supabase n'est pas encore configuré (Clés manquantes dans l'environnement)." });
+    console.error("Register Error:", err);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

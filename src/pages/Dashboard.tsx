@@ -35,6 +35,26 @@ const dataFournisseur = [
   { name: 'Juin', views: 900, clics: 56, bids: 0, messages: 0 },
 ];
 
+const dataAcheteur1y = [
+  ...dataAcheteur,
+  { name: 'Juil', bids: 22, messages: 60, views: 0, clics: 0 },
+  { name: 'Août', bids: 18, messages: 50, views: 0, clics: 0 },
+  { name: 'Sep', bids: 25, messages: 70, views: 0, clics: 0 },
+  { name: 'Oct', bids: 30, messages: 85, views: 0, clics: 0 },
+  { name: 'Nov', bids: 35, messages: 95, views: 0, clics: 0 },
+  { name: 'Déc', bids: 42, messages: 110, views: 0, clics: 0 },
+];
+
+const dataFournisseur1y = [
+  ...dataFournisseur,
+  { name: 'Juil', views: 850, clics: 50, bids: 0, messages: 0 },
+  { name: 'Août', views: 700, clics: 40, bids: 0, messages: 0 },
+  { name: 'Sep', views: 1100, clics: 65, bids: 0, messages: 0 },
+  { name: 'Oct', views: 1300, clics: 80, bids: 0, messages: 0 },
+  { name: 'Nov', views: 1500, clics: 95, bids: 0, messages: 0 },
+  { name: 'Déc', views: 1800, clics: 120, bids: 0, messages: 0 },
+];
+
 const Dashboard = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -42,7 +62,23 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [showProductForm, setShowProductForm] = useState(false);
   const [showTenderForm, setShowTenderForm] = useState(false);
+  const [showAdForm, setShowAdForm] = useState(false);
   const [tenderStep, setTenderStep] = useState(1);
+  const [tenderFormData, setTenderFormData] = useState({
+    title: '',
+    sector: "Énergie & Hydrocarbures",
+    budget: '',
+    description: '',
+    location: "Alger (Rouiba / Dar el Beida)",
+    deadline: ''
+  });
+
+  const [adFormData, setAdFormData] = useState({
+    name: '',
+    type: 'Bannière Accueil',
+    url: '',
+    duration: '1 Semaine'
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
@@ -192,23 +228,94 @@ const Dashboard = () => {
 
   const handleUpdateCompany = (e: React.FormEvent) => {
     e.preventDefault();
-    showNotify("Informations entreprise mises à jour.");
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      showNotify("Informations entreprise mises à jour.", "success");
+    }, 1000);
   };
 
-  const addProduct = (e: React.FormEvent) => {
+  const addProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const newP = {
-      id: `p${Date.now()}`,
+    const payload = {
       name: formData.get('name') as string,
-      cat: formData.get('category') as string,
-      price: `${formData.get('price')} DZD`,
-      status: 'Actif',
-      color: 'text-success'
+      category: formData.get('category') as string,
+      price: formData.get('price') as string,
+      description: formData.get('description') as string,
     };
-    setProducts(prev => [newP, ...prev]);
-    setShowProductForm(false);
-    showNotify("Le produit a été ajouté avec succès au catalogue.");
+    
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const addedProd = await res.json();
+        setProducts(prev => [addedProd, ...prev]);
+        setShowProductForm(false);
+        showNotify("Le produit a été ajouté avec succès au catalogue.", "success");
+      } else {
+        showNotify("Erreur lors de l'ajout", "error");
+      }
+    } catch (err) {
+      showNotify("Erreur réseau", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitTender = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/tenders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+           title: tenderFormData.title,
+           description: tenderFormData.description,
+           deadline: tenderFormData.deadline
+        }) // The API expects these params
+      });
+      if (res.ok) {
+        const newTender = await res.json();
+        setTenders(prev => [newTender, ...prev]);
+        setShowTenderForm(false);
+        setTenderStep(1);
+        setTenderFormData({ title: '', sector: "Énergie & Hydrocarbures", budget: '', description: '', location: "Alger (Rouiba / Dar el Beida)", deadline: '' });
+        showNotify("Votre appel d'offre a été soumis avec succès.", "success");
+      } else {
+        showNotify("Erreur lors de l'ajout", "error");
+      }
+    } catch (err) {
+      showNotify("Erreur réseau", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitAd = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adFormData)
+      });
+      if (res.ok) {
+        setShowAdForm(false);
+        setAdFormData({ name: '', type: 'Bannière Accueil', url: '', duration: '1 Semaine' });
+        showNotify("Votre demande d'espace pub a été envoyée pour validation.", "success");
+      } else {
+        showNotify("Erreur lors de la soumission", "error");
+      }
+    } catch (err) {
+      showNotify("Erreur réseau", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const removeFavorite = async (id: number | string) => {
@@ -227,10 +334,16 @@ const Dashboard = () => {
     role: 'Directeur des Achats Industriels',
     phone: '+213 21 00 00 00'
   });
+  const [chartTimeframe, setChartTimeframe] = useState<'6m' | '1y'>('6m');
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    showNotify("Profil mis à jour avec succès.");
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      showNotify("Profil mis à jour avec succès.", "success");
+    }, 1000);
   };
 
   const filteredProducts = products.filter(p => 
@@ -296,13 +409,23 @@ const Dashboard = () => {
                     {user.role === 'fournisseur' ? 'Performance Visibilité' : 'Engagement Appels d\'Offres'}
                   </h3>
                   <div className="flex bg-gray-50 p-1 rounded-lg">
-                    <button className="px-3 py-1 bg-white shadow-sm rounded-md text-[10px] font-black uppercase">6 mois</button>
-                    <button className="px-3 py-1 text-[10px] font-black text-gray-400 uppercase">1 an</button>
+                    <button 
+                      onClick={() => setChartTimeframe('6m')}
+                      className={cn("px-3 py-1 rounded-md text-[10px] font-black uppercase transition-all", chartTimeframe === '6m' ? "bg-white shadow-sm text-primary" : "text-gray-400 hover:text-primary")}
+                    >
+                      6 mois
+                    </button>
+                    <button 
+                      onClick={() => setChartTimeframe('1y')}
+                      className={cn("px-3 py-1 rounded-md text-[10px] font-black uppercase transition-all", chartTimeframe === '1y' ? "bg-white shadow-sm text-primary" : "text-gray-400 hover:text-primary")}
+                    >
+                      1 an
+                    </button>
                   </div>
                 </div>
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={user.role === 'fournisseur' ? dataFournisseur : dataAcheteur}>
+                    <AreaChart data={user.role === 'fournisseur' ? (chartTimeframe === '1y' ? dataFournisseur1y : dataFournisseur) : (chartTimeframe === '1y' ? dataAcheteur1y : dataAcheteur)}>
                       <defs>
                         <linearGradient id="colorMain" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={user.role === 'fournisseur' ? "#1B4D2E" : "#d97706"} stopOpacity={0.1}/>
@@ -350,7 +473,7 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
-                <button className="w-full mt-8 py-3 text-sm font-bold text-primary hover:bg-gray-50 rounded-xl transition-all flex items-center justify-center space-x-2">
+                <button onClick={() => showNotify("Redirection vers l'historique complet...", "success")} className="w-full mt-8 py-3 text-sm font-bold text-primary hover:bg-gray-50 rounded-xl transition-all flex items-center justify-center space-x-2">
                   <span>Voir tout</span>
                   <ArrowUpRight className="h-4 w-4" />
                 </button>
@@ -368,8 +491,18 @@ const Dashboard = () => {
           >
             <div className="flex items-center space-x-6 mb-12">
                <div className="relative group">
-                  <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center text-primary font-black text-3xl shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                  <div className="w-24 h-24 bg-gray-100 rounded-3xl flex items-center justify-center text-primary font-black text-3xl shrink-0 group-hover:bg-primary group-hover:text-white transition-all relative overflow-hidden">
                      {profileInfo.name.charAt(0)}
+                     <input 
+                       type="file" 
+                       accept="image/*"
+                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                       onChange={(e) => {
+                         if (e.target.files && e.target.files.length > 0) {
+                           showNotify(`Image ${e.target.files[0].name} sélectionnée pour l'avatar`, 'success');
+                         }
+                       }}
+                     />
                   </div>
                   <button className="absolute -bottom-2 -right-2 p-2 bg-secondary text-white rounded-xl shadow-lg border-2 border-white hover:scale-110 transition-all">
                      <Edit2 className="h-3 w-3" />
@@ -424,10 +557,10 @@ const Dashboard = () => {
               <div className="pt-8 border-t border-gray-50 flex items-center justify-between">
                 <div>
                    <h4 className="text-[10px] font-black text-primary uppercase italic mb-1">Sécurité</h4>
-                   <button type="button" className="text-[9px] font-black text-secondary hover:underline uppercase tracking-widest">Changer mon mot de passe</button>
+                   <button type="button" onClick={() => showNotify("Un email de réinitialisation a été envoyé.", "success")} className="text-[9px] font-black text-secondary hover:underline uppercase tracking-widest">Changer mon mot de passe</button>
                 </div>
-                <button type="submit" className="bg-primary text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary transition-all">
-                  Sauvegarder les changements
+                <button type="submit" disabled={isLoading} className="bg-primary text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary transition-all flex items-center space-x-2">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>Sauvegarder les changements</span>}
                 </button>
               </div>
             </form>
@@ -503,9 +636,9 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Phone className="h-4 w-4" /></button>
-                  <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Video className="h-4 w-4" /></button>
-                  <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Info className="h-4 w-4" /></button>
+                  <button onClick={() => showNotify("Appel audio initié...", "success")} className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Phone className="h-4 w-4" /></button>
+                  <button onClick={() => showNotify("Appel vidéo initié...", "success")} className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Video className="h-4 w-4" /></button>
+                  <button onClick={() => showNotify("Informations du contact", "success")} className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"><Info className="h-4 w-4" /></button>
                 </div>
               </div>
 
@@ -553,7 +686,7 @@ const Dashboard = () => {
                   onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                   className="flex items-center space-x-4 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:border-secondary transition-all"
                 >
-                  <button type="button" className="p-3 text-gray-400 hover:text-secondary transition-colors"><Zap className="h-5 w-5" /></button>
+                  <button type="button" onClick={() => showNotify("Joindre un devis ou dossier technique...", "success")} className="p-3 text-gray-400 hover:text-secondary transition-colors"><Zap className="h-5 w-5" /></button>
                   <input 
                     type="text" 
                     value={newMessage}
@@ -663,7 +796,7 @@ const Dashboard = () => {
                                   <p className="text-[9px] font-bold text-gray-400 uppercase">Soumis il y a {i}h</p>
                                </div>
                             </div>
-                            <button className="text-[9px] font-black text-secondary uppercase tracking-widest hover:underline">Voir l'offre</button>
+                            <button onClick={() => showNotify("Détails de l'offre ouverts dans une nouvelle fenêtre", "success")} className="text-[9px] font-black text-secondary uppercase tracking-widest hover:underline">Voir l'offre</button>
                          </div>
                        ))}
                     </div>
@@ -674,8 +807,8 @@ const Dashboard = () => {
                    <div className="bg-primary p-8 rounded-[40px] text-white">
                       <h4 className="text-[11px] font-black uppercase tracking-widest mb-6 opacity-40">Actions</h4>
                       <div className="space-y-3">
-                         <button className="w-full py-4 bg-white text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">Consulter Dossier</button>
-                         <button className="w-full py-4 bg-primary border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Télécharger PDF</button>
+                         <button onClick={() => showNotify("Accès au dossier candidat complet...", "success")} className="w-full py-4 bg-white text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">Consulter Dossier</button>
+                         <button onClick={() => showNotify("Téléchargement PDF en cours...", "success")} className="w-full py-4 bg-primary border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Télécharger PDF</button>
                       </div>
                       <div className="mt-8 pt-8 border-t border-white/10">
                          <p className="text-[9px] font-bold text-white/50 uppercase leading-relaxed italic">Date limite de soumission: 25 Mai 2026 à 17:00</p>
@@ -770,7 +903,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex bg-white border border-gray-100 p-1 rounded-xl">
                    {['Tous', 'Actif', 'Rupture'].map(f => (
-                     <button key={f} className={cn("px-4 py-2 text-[9px] font-black uppercase tracking-[0.2em] rounded-lg transition-all", f === 'Tous' ? "bg-primary text-white" : "text-gray-400 hover:text-primary")}>{f}</button>
+                     <button key={f} onClick={() => showNotify(`Filtre ${f} appliqué`, "success")} className={cn("px-4 py-2 text-[9px] font-black uppercase tracking-[0.2em] rounded-lg transition-all", f === 'Tous' ? "bg-primary text-white" : "text-gray-400 hover:text-primary")}>{f}</button>
                    ))}
                 </div>
                 <button 
@@ -814,7 +947,7 @@ const Dashboard = () => {
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end space-x-2">
-                           <button className="p-2.5 bg-gray-50 text-gray-400 hover:text-primary rounded-xl transition-all"><Edit2 className="h-4 w-4" /></button>
+                           <button onClick={() => showNotify("Ouverture de l'éditeur...", "success")} className="p-2.5 bg-gray-50 text-gray-400 hover:text-primary rounded-xl transition-all"><Edit2 className="h-4 w-4" /></button>
                            <button 
                              onClick={() => deleteProduct(p.id)}
                              className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 rounded-xl transition-all"
@@ -891,6 +1024,70 @@ const Dashboard = () => {
             )}
           </motion.div>
         );
+      case 'ads':
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-8"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+              <div>
+                <h3 className="text-2xl font-black text-primary uppercase italic">Espace Publicitaire</h3>
+                <p className="text-gray-500 mt-2">Gérez vos campagnes et maximisez votre visibilité sur la plateforme.</p>
+              </div>
+              <button 
+                onClick={() => setShowAdForm(true)}
+                className="bg-secondary text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-secondary/20 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Demander un espace pub</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <h4 className="font-bold text-primary text-lg">Vos campagnes actives</h4>
+                <div className="bg-white p-12 text-center rounded-3xl border border-dashed border-gray-200">
+                   <div className="bg-gray-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                     <Zap className="h-8 w-8 text-gray-400" />
+                   </div>
+                   <h5 className="font-bold text-gray-900 mb-2">Aucune campagne en cours</h5>
+                   <p className="text-sm text-gray-500">Vous n'avez pas de publicité active actuellement.</p>
+                </div>
+               
+                <div className="bg-primary/5 border border-primary/10 p-6 rounded-3xl mt-4">
+                   <h5 className="font-bold text-primary mb-2">Pourquoi annoncer ici ?</h5>
+                   <ul className="space-y-2 text-sm text-gray-700">
+                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Atteignez plus de 10 000 professionnels ciblés</li>
+                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Augmentez vos chances de remporter des AO</li>
+                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" /> Bannières affichées en page d'accueil et annuaire</li>
+                   </ul>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                 <h4 className="font-bold text-primary text-lg">Statistiques</h4>
+                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-4 border-b border-gray-50">
+                       <span className="text-sm text-gray-500 font-bold">Vues (30j)</span>
+                       <span className="font-black text-primary">0</span>
+                    </div>
+                    <div className="flex items-center justify-between pb-4 border-b border-gray-50">
+                       <span className="text-sm text-gray-500 font-bold">Clics (30j)</span>
+                       <span className="font-black text-primary">0</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                       <span className="text-sm text-gray-500 font-bold">CTR</span>
+                       <span className="font-black text-primary">0.0%</span>
+                    </div>
+                 </div>
+              </div>
+            </div>
+          </motion.div>
+        );
+
       case 'subscription':
         return (
           <motion.div 
@@ -905,8 +1102,8 @@ const Dashboard = () => {
                   <h3 className="text-4xl font-black uppercase italic tracking-tighter mt-4 mb-2">Fournisseur Premium</h3>
                   <p className="text-white/60 font-medium">Valide jusqu'au 16 Mai 2027</p>
                   <div className="mt-10 flex space-x-4">
-                     <button className="bg-white text-primary px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">Gérer l'abonnement</button>
-                     <button className="bg-white/10 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20">Voir facture</button>
+                     <button onClick={() => showNotify("Redirection vers Stripe Checkout...", "success")} className="bg-white text-primary px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">Gérer l'abonnement</button>
+                     <button onClick={() => showNotify("Téléchargement de la facture...", "success")} className="bg-white/10 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20">Voir facture</button>
                   </div>
                </div>
                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
@@ -1010,8 +1207,21 @@ const Dashboard = () => {
           >
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
                <div className="h-32 bg-primary relative">
-                  <div className="absolute -bottom-10 left-10 w-24 h-24 bg-white rounded-[24px] border-4 border-white shadow-xl flex items-center justify-center">
-                     <Building2 className="h-10 w-10 text-primary" />
+                  <div className="absolute -bottom-10 left-10 w-24 h-24 bg-white rounded-[24px] border-4 border-white shadow-xl flex items-center justify-center group overflow-hidden">
+                     <Building2 className="h-10 w-10 text-primary group-hover:opacity-0 transition-opacity" />
+                     <div className="absolute inset-0 bg-secondary/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Edit2 className="h-6 w-6 text-white" />
+                     </div>
+                     <input 
+                       type="file" 
+                       accept="image/*"
+                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                       onChange={(e) => {
+                         if (e.target.files && e.target.files.length > 0) {
+                           showNotify(`Image ${e.target.files[0].name} sélectionnée pour le logo Mettre à jour la fiche.`, 'success');
+                         }
+                       }}
+                     />
                   </div>
                </div>
                <form onSubmit={handleUpdateCompany} className="p-12 pt-20 space-y-8">
@@ -1065,8 +1275,9 @@ const Dashboard = () => {
                      </div>
                   </div>
                   <div className="pt-4">
-                     <button type="submit" className="bg-primary text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary transition-all">
-                        Mettre à jour la fiche
+                     <button type="submit" disabled={isLoading} className="bg-primary text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-secondary transition-all flex items-center space-x-2">
+                        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        <span>Mettre à jour la fiche</span>
                      </button>
                   </div>
                </form>
@@ -1085,6 +1296,7 @@ const Dashboard = () => {
     { id: 'tenders', name: user?.role === 'acheteur' ? 'Mes Appels d\'offres' : 'Opportunités AO', icon: FileText },
     { id: 'company', name: 'Ma Fiche Entreprise', icon: Building2, roles: ['fournisseur'] },
     { id: 'favorites', name: 'Favoris', icon: Heart, roles: ['acheteur'] },
+    { id: 'ads', name: 'Publicité', icon: Zap },
     { id: 'subscription', name: 'Abonnement', icon: CreditCard },
     { id: 'stats', name: 'Statistiques', icon: BarChart3 },
     { id: 'admin', name: 'Console Pro', icon: ShieldCheck, isExternal: true, roles: ['admin'] },
@@ -1356,6 +1568,8 @@ const Dashboard = () => {
                             <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Titre du Projet</label>
                             <input 
                               type="text" 
+                              value={tenderFormData.title}
+                              onChange={e => setTenderFormData({...tenderFormData, title: e.target.value})}
                               placeholder="Ex: Fourniture de câbles armés 20kV..." 
                               className="w-full bg-gray-50 border-none px-8 py-5 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-secondary/20 transition-all" 
                             />
@@ -1363,7 +1577,10 @@ const Dashboard = () => {
                           <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Secteur d'activité</label>
-                              <select className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
+                              <select 
+                                value={tenderFormData.sector}
+                                onChange={e => setTenderFormData({...tenderFormData, sector: e.target.value})}
+                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
                                 <option>Énergie & Hydrocarbures</option>
                                 <option>Construction & BTP</option>
                                 <option>Automobile & Mécanique</option>
@@ -1372,7 +1589,12 @@ const Dashboard = () => {
                             </div>
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Budget estimé (DZD)</label>
-                              <input type="text" placeholder="Ex: 5,000,000" className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-sm font-bold outline-none" />
+                              <input 
+                                type="text" 
+                                value={tenderFormData.budget}
+                                onChange={e => setTenderFormData({...tenderFormData, budget: e.target.value})}
+                                placeholder="Ex: 5,000,000" 
+                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-sm font-bold outline-none" />
                             </div>
                           </div>
                         </motion.div>
@@ -1390,6 +1612,8 @@ const Dashboard = () => {
                             <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Description détaillée</label>
                             <textarea 
                               rows={6} 
+                              value={tenderFormData.description}
+                              onChange={e => setTenderFormData({...tenderFormData, description: e.target.value})}
                               placeholder="Détaillez vos besoins techniques..." 
                               className="w-full bg-gray-50 border-none px-8 py-6 rounded-3xl text-sm font-medium outline-none resize-none" 
                             />
@@ -1412,7 +1636,10 @@ const Dashboard = () => {
                            <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Lieu de livraison / Service</label>
-                              <select className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
+                              <select 
+                                value={tenderFormData.location}
+                                onChange={e => setTenderFormData({...tenderFormData, location: e.target.value})}
+                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
                                 <option>Alger (Rouiba / Dar el Beida)</option>
                                 <option>Oran (Arzew / Bethioua)</option>
                                 <option>Sétif (Zone Industrielle)</option>
@@ -1421,7 +1648,11 @@ const Dashboard = () => {
                             </div>
                             <div className="space-y-2">
                               <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Date limite de réponse</label>
-                              <input type="date" className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-xs font-bold outline-none" />
+                              <input 
+                                type="date" 
+                                value={tenderFormData.deadline}
+                                onChange={e => setTenderFormData({...tenderFormData, deadline: e.target.value})}
+                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-xs font-bold outline-none" />
                             </div>
                           </div>
                           <div className="space-y-4">
@@ -1479,13 +1710,7 @@ const Dashboard = () => {
                         if (tenderStep < 4) {
                           setTenderStep(prev => prev + 1);
                         } else {
-                          setIsLoading(true);
-                          setTimeout(() => {
-                            setIsLoading(false);
-                            setShowTenderForm(false);
-                            setTenderStep(1);
-                            showNotify("Votre appel d'offre a été soumis avec succès.");
-                          }, 1500);
+                          submitTender();
                         }
                       }}
                       className="flex-1 bg-secondary text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-secondary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-3"
@@ -1506,6 +1731,149 @@ const Dashboard = () => {
           </div>
         )}
       </AnimatePresence>
+      {/* Ad Space Request Form Modal */}
+      <AnimatePresence>
+        {showAdForm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-primary/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white max-w-2xl w-full rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 md:p-12 overflow-y-auto">
+                <div className="flex justify-between items-start mb-8">
+                  <div>
+                    <h2 className="text-3xl font-black text-primary uppercase italic mb-2">Demande d'Espace Pub</h2>
+                    <p className="text-gray-500 font-medium">Bostez votre visibilité auprès des professionnels de l'industrie.</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowAdForm(false)}
+                    className="p-3 bg-gray-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Nom de la campagne</label>
+                    <input 
+                      type="text" 
+                      value={adFormData.name}
+                      onChange={e => setAdFormData({...adFormData, name: e.target.value})}
+                      placeholder="Ex: Lancement produit 2026"
+                      className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-sm font-bold text-gray-900 placeholder-gray-400 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Type d'emplacement</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="flex flex-col p-4 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-gray-200 cursor-pointer transition-all">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <input 
+                            type="radio" 
+                            name="ad_type" 
+                            checked={adFormData.type === 'Bannière Accueil'}
+                            onChange={() => setAdFormData({...adFormData, type: 'Bannière Accueil'})}
+                            className="text-secondary" 
+                          />
+                          <span className="text-sm font-bold text-primary">Bannière Accueil</span>
+                        </div>
+                        <span className="text-[10px] text-gray-500 ml-7">Visibilité maximale sur la première page</span>
+                      </label>
+                      <label className="flex flex-col p-4 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-gray-200 cursor-pointer transition-all">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <input 
+                            type="radio" 
+                            name="ad_type" 
+                            checked={adFormData.type === 'Encart Annuaire'}
+                            onChange={() => setAdFormData({...adFormData, type: 'Encart Annuaire'})}
+                            className="text-secondary" 
+                          />
+                          <span className="text-sm font-bold text-primary">Encart Annuaire</span>
+                        </div>
+                        <span className="text-[10px] text-gray-500 ml-7">Ciblage précis lors des recherches B2B</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Visuel de la bannière</label>
+                    <div className="mt-2 flex justify-center rounded-2xl border border-dashed border-gray-300 px-6 py-10 hover:border-secondary transition-colors cursor-pointer bg-gray-50 hover:bg-gray-100 group relative">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            showNotify(`Image ${e.target.files[0].name} sélectionnée`, 'success');
+                          }
+                        }}
+                      />
+                      <div className="text-center">
+                        <Upload className="mx-auto h-8 w-8 text-gray-400 group-hover:text-secondary mb-3 transition-colors" aria-hidden="true" />
+                        <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                          <span className="relative cursor-pointer rounded-md font-bold text-secondary focus-within:outline-none focus-within:ring-2 focus-within:ring-secondary focus-within:ring-offset-2 hover:text-secondary">
+                            <span>Télécharger un fichier</span>
+                          </span>
+                          <p className="pl-1">ou glisser-déposer</p>
+                        </div>
+                        <p className="text-xs leading-5 text-gray-500 mt-2">PNG, JPG, GIF jusqu'à 10MB</p>
+                        <p className="text-xs leading-5 text-gray-500">Dimensions recommandées : 1200x300px</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">URL de redirection (Optionnel)</label>
+                    <input 
+                      type="url" 
+                      value={adFormData.url}
+                      onChange={e => setAdFormData({...adFormData, url: e.target.value})}
+                      placeholder="https://votre-site.com/produit"
+                      className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-sm font-bold text-gray-900 placeholder-gray-400 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Durée souhaitée</label>
+                    <select 
+                      value={adFormData.duration}
+                      onChange={e => setAdFormData({...adFormData, duration: e.target.value})}
+                      className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
+                      <option>1 Semaine</option>
+                      <option>1 Mois</option>
+                      <option>3 Mois</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-6 border-t border-gray-100 flex justify-end space-x-4">
+                    <button 
+                      onClick={() => setShowAdForm(false)}
+                      className="px-8 py-4 rounded-2xl text-[10px] font-black text-gray-500 uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button 
+                      onClick={submitAd}
+                      className="bg-secondary text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-secondary/30 hover:scale-105 active:scale-95 transition-all flex items-center space-x-3"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <span>Soumettre la demande</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Global Notification Feedback */}
       <AnimatePresence>
         {notification && (

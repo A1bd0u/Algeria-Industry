@@ -10,21 +10,23 @@ router.get('/', async (req, res) => {
     
     const { data: products, error } = await supabase
       .from('products')
-      .select('*');
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase Error (Products GET):', error);
-      throw new Error("Erreur de db");
+      throw error;
     }
 
-    return res.json(products || []);
+    // Convert string colors if they don't exist
+    const enhancedProducts = (products || []).map(p => ({
+      ...p,
+      color: p.status === 'Actif' ? 'text-success' : 'text-gray-400'
+    }));
+
+    return res.json(enhancedProducts);
   } catch (err: any) {
-    console.error('Supabase fallback:', err.message);
-    return res.json([
-      { id: 'p1', name: 'Pompe Industrielle PX1', cat: 'Hydraulique', price: '450,000 DZD', status: 'Actif', color: 'text-success' },
-      { id: 'p2', name: 'Groupe Électrogène 100kVA', cat: 'Énergie', price: '1,200,000 DZD', status: 'Actif', color: 'text-success' },
-      { id: 'p3', name: "Compresseur d'air", cat: 'Pneumatique', price: '280,000 DZD', status: 'En rupture', color: 'text-error' },
-    ]);
+    console.error("Supabase Error GET /products:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -35,26 +37,22 @@ router.post('/', async (req, res) => {
   try {
     const supabase = getSupabase();
     
-    // Pour une vraie base, on ajouterait owner_id
     const { data, error } = await supabase
       .from('products')
-      .insert([{ name, cat, price, status }])
+      .insert([{ name, cat, price, status: status || 'Actif' }])
       .select()
       .single();
       
     if (error) throw error;
-    return res.status(201).json(data);
+    
+    const responseData = {
+        ...data,
+        color: data.status === 'Actif' ? 'text-success' : 'text-gray-400'
+    };
+    return res.status(201).json(responseData);
   } catch (err: any) {
-    console.error('Supabase Error (Product POST):', err.message);
-    // Mock for demo
-    return res.status(201).json({
-       id: `p-${Math.floor(Math.random() * 1000)}`,
-       name,
-       cat,
-       price,
-       status,
-       color: status === 'Actif' ? 'text-success' : 'text-gray-400'
-    });
+    console.error("Supabase Error POST /products:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

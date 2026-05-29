@@ -14,14 +14,13 @@ router.get('/', async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-       console.error('Supabase Error (RFQs GET):', error);
-       throw new Error("Erreur DB");
+       throw error;
     }
     
     return res.json(rfqs || []);
   } catch(e: any) {
-    console.error('Fallback RFQs:', e.message);
-    return res.json([]);
+    console.error("Supabase Error GET /rfqs:", e);
+    return res.status(500).json({ error: e.message });
   }
 });
 
@@ -41,8 +40,8 @@ router.post('/', async (req, res) => {
     if (error) throw error;
     return res.status(201).json(data);
   } catch (err: any) {
-    console.error('Supabase Error (RFQs POST):', err.message);
-    return res.status(201).json({ id: Date.now(), success: true });
+    console.error("Supabase Error POST /rfqs:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

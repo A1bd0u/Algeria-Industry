@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ArrowRight, Building2, Package, FileText, CheckCircle2, Users, ChevronDown, Activity, ArrowUpRight, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -16,80 +16,38 @@ const PARTNERS = [
   { name: "Mobilis", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Logo_Mobilis.svg/1200px-Logo_Mobilis.svg.png" },
 ];
 
-const FEATURED_PRODUCTS = [
-  {
-    id: 1,
-    name: "Pompe Centrifuge Industrielle",
-    category: "Mécanique",
-    company: "Algeria Pumps Corp",
-    image: "https://picsum.photos/seed/pump/400/400",
-    price: "Sur devis"
-  },
-  {
-    id: 2,
-    name: "Panneau Solaire 450W Monocristallin",
-    category: "Énergie",
-    company: "EcoSolar Algeria",
-    image: "https://picsum.photos/seed/solar/400/400",
-    price: 25000
-  },
-  {
-    id: 3,
-    name: "Groupe Électrogène 100kVA",
-    category: "Énergie",
-    company: "PowerGen DZ",
-    image: "https://picsum.photos/seed/generator/400/400",
-    price: 1200000
-  },
-  {
-    id: 4,
-    name: "Chariot Élévateur Électrique",
-    category: "Logistique",
-    company: "LiftMaster Algerie",
-    image: "https://picsum.photos/seed/forklift/400/400",
-    price: "Sur devis"
-  },
-  {
-    id: 5,
-    name: "Compresseur d'Air Industriel",
-    category: "Mécanique",
-    company: "AirTech DZ",
-    image: "https://picsum.photos/seed/compressor/400/400",
-    price: 450000
-  },
-  {
-    id: 6,
-    name: "Transformateur Électrique 630kVA",
-    category: "Énergie",
-    company: "ElecTrans Algerie",
-    image: "https://picsum.photos/seed/transformer/400/400",
-    price: "Sur devis"
-  },
-  {
-    id: 7,
-    name: "Unité de Filtration d'Eau",
-    category: "Environnement",
-    company: "PureWater DZ",
-    image: "https://picsum.photos/seed/filter/400/400",
-    price: "850 000 DZD"
-  },
-  {
-    id: 8,
-    name: "Robot de Soudage Automatique",
-    category: "Automatisme",
-    company: "AutoWeld DZ",
-    image: "https://picsum.photos/seed/welding/400/400",
-    price: "Sur devis"
-  }
-];
-
 const Home = () => {
   const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
   const [visibleProducts, setVisibleProducts] = useState(4);
+  const [products, setProducts] = useState<any[]>([]);
+  const [tenders, setTenders] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const [prodRes, tendRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/tenders')
+        ]);
+        
+        if (prodRes.ok) {
+          const p = await prodRes.json();
+          setProducts(p.slice(0, 8)); // Top 8
+        }
+        if (tendRes.ok) {
+          const tData = await tendRes.json();
+          setTenders(tData.slice(0, 3)); // Top 3
+        }
+      } catch (e) {
+        console.error("Home fetch error", e);
+      }
+    };
+    fetchHomeData();
+  }, []);
 
   const showMore = () => {
-    setVisibleProducts(prev => Math.min(prev + 4, FEATURED_PRODUCTS.length));
+    setVisibleProducts(prev => Math.min(prev + 4, products.length));
   };
   
   return (
@@ -178,11 +136,11 @@ const Home = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {[
-                { title: "Fourniture de Transformateurs 630kVA", company: "Sonelgaz", time: "Il y a 2h", sector: "Électricité", status: "Urgent", color: "border-red-500" },
-                { title: "Audit et Inspection de Pipelines", company: "Sonatrach", time: "Il y a 5h", sector: "Hydrocarbures", status: "Ouvert", color: "border-secondary" },
-                { title: "Remplacement Unités de Filtration", company: "Seaal", time: "Il y a 1j", sector: "Hydraulique", status: "Ouvert", color: "border-secondary" },
-              ].map((tender, i) => (
+              {tenders.length === 0 ? (
+                <div className="bg-gray-50 p-8 text-center text-gray-400 font-medium text-sm rounded-[24px]">
+                  Aucun appel d'offres pour le moment.
+                </div>
+              ) : tenders.map((tender, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -191,25 +149,25 @@ const Home = () => {
                   transition={{ delay: i * 0.1 }}
                   className={cn(
                     "bg-neutral-bg p-6 border-l-4 shadow-sm hover:shadow-xl transition-all cursor-pointer group flex items-center justify-between",
-                    tender.color,
+                    tender.status === 'Urgent' ? "border-red-500" : "border-secondary",
                     i18n.language === 'ar' && "flex-row-reverse text-right"
                   )}
                 >
                   <div className="flex-1">
                     <div className={cn("flex items-center space-x-3 mb-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
-                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">{tender.sector}</span>
+                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">{tender.category || tender.sector || '-'}</span>
                       <span className="w-1 h-1 bg-gray-200 rounded-full" />
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{tender.time}</span>
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{new Date(tender.created_at).toLocaleDateString()}</span>
                     </div>
                     <h4 className="text-lg font-black text-primary leading-tight uppercase group-hover:text-secondary transition-colors mb-2">{tender.title}</h4>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{tender.company}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{tender.author?.company || 'Entreprise'}</p>
                   </div>
                   <div className={cn("flex flex-col items-end space-y-4 ml-6", i18n.language === 'ar' && "ml-0 mr-6 items-start")}>
                     <span className={cn(
                       "text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest",
                       tender.status === 'Urgent' ? "bg-red-500 text-white" : "bg-success/10 text-success"
                     )}>
-                      {tender.status}
+                      {tender.status || 'Ouvert'}
                     </span>
                     <button className="p-2 bg-white text-gray-400 group-hover:bg-primary group-hover:text-white transition-all rounded-xl border border-gray-100 flex items-center justify-center">
                       <ArrowUpRight className="h-5 w-5" />
@@ -257,7 +215,11 @@ const Home = () => {
           </div>
 
           <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-border-tech", i18n.language === 'ar' && "border-l-0 border-r")}>
-            {FEATURED_PRODUCTS.slice(0, visibleProducts).map((product, i) => (
+            {products.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-gray-500 font-medium">
+                Aucun produit publié pour le moment.
+              </div>
+            ) : products.slice(0, visibleProducts).map((product, i) => (
               <motion.div 
                 key={product.id}
                 initial={{ opacity: 0 }}
@@ -267,7 +229,7 @@ const Home = () => {
               >
                 <Link to={`/products/${product.id}`} className="block aspect-square overflow-hidden mb-6 bg-gray-50 border border-border-tech p-4 group-hover:border-secondary transition-colors">
                   <img 
-                    src={product.image} 
+                    src={product.image || `https://picsum.photos/seed/${product.id}/400/400`} 
                     alt={product.name} 
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
@@ -275,7 +237,7 @@ const Home = () => {
                 </Link>
                 <div className={cn("space-y-4", i18n.language === 'ar' && "text-right")}>
                   <div>
-                    <span className="tech-label">{product.company}</span>
+                    <span className="tech-label">{product.company || 'Entreprise ID: ' + (product.owner_id ? product.owner_id.substring(0, 8) : 'Inconnu')}</span>
                     <Link to={`/products/${product.id}`}>
                       <h3 className={cn("text-sm font-black text-primary uppercase tracking-tight line-clamp-2 min-h-[40px] group-hover:text-secondary transition-colors", i18n.language === 'ar' && "text-base tracking-normal")}>
                         {product.name}
@@ -286,7 +248,7 @@ const Home = () => {
                   <div className={cn("flex items-center justify-between pt-4 border-t border-border-tech", i18n.language === 'ar' && "flex-row-reverse")}>
                     <div className={cn("flex flex-col", i18n.language === 'ar' && "text-right")}>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{i18n.language === 'ar' ? 'السعر' : 'Cotation'}</span>
-                      <span className="text-sm font-mono font-bold text-primary">{formatPrice(product.price)}</span>
+                      <span className="text-sm font-mono font-bold text-primary">{formatPrice(product.price || 'Sur Devis')}</span>
                     </div>
                     <Link to={`/products/${product.id}`} className="bg-primary text-white p-2 hover:bg-secondary transition-colors">
                       <ArrowRight className={cn("h-4 w-4", i18n.language === 'ar' && "rotate-180")} />
@@ -297,7 +259,7 @@ const Home = () => {
             ))}
           </div>
 
-          {visibleProducts < FEATURED_PRODUCTS.length && (
+          {visibleProducts < products.length && (
             <div className="mt-16 text-center">
               <button 
                 onClick={showMore}

@@ -10,22 +10,18 @@ router.get('/', async (req, res) => {
     
     // In a real app we would have a kyc_applications table, or check companies with status='pending'
     const { data: kycs, error } = await supabase
-      .from('kyc_applications')
+      .from('kyc_requests')
       .select('*')
       .eq('status', 'pending');
 
     if (error) {
-       console.error('Supabase Error (KYC GET):', error);
-       throw new Error("Erreur DB");
+       throw error;
     }
     
     return res.json(kycs || []);
   } catch(e: any) {
-    console.error('Fallback KYC:', e.message);
-    return res.json([
-      { id: 'kyc-1', name: 'Global Tech Oran', activity: 'Composants Électriques', date: 'Il y a 2h', docs: ['RC', 'NIF', 'AI'] },
-      { id: 'kyc-2', name: 'Mecanique du Sud', activity: 'Maintenance Industrielle', date: 'Il y a 5h', docs: ['RC', 'NIF'] },
-    ]);
+    console.error("Supabase Error GET /kyc:", e);
+    return res.status(500).json({ error: e.message });
   }
 });
 
@@ -36,14 +32,15 @@ router.post('/:id/approve', async (req, res) => {
     const supabase = getSupabase();
     
     const { error } = await supabase
-      .from('kyc_applications')
+      .from('kyc_requests')
       .update({ status: 'approved' })
       .eq('id', id);
       
     if (error) throw error;
     return res.json({ success: true });
   } catch (err: any) {
-    return res.json({ success: true, message: "Mock apprové" });
+    console.error("Supabase Error POST /kyc/:id/approve:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -54,14 +51,15 @@ router.post('/:id/reject', async (req, res) => {
     const supabase = getSupabase();
     
     const { error } = await supabase
-      .from('kyc_applications')
+      .from('kyc_requests')
       .update({ status: 'rejected' })
       .eq('id', id);
       
     if (error) throw error;
     return res.json({ success: true });
   } catch (err: any) {
-    return res.json({ success: true, message: "Mock rejeté" });
+    console.error("Supabase Error POST /kyc/:id/reject:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

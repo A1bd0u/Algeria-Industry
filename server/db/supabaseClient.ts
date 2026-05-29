@@ -5,14 +5,17 @@ let supabaseInstance: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
-    const supabaseUrl = process.env.SUPABASE_URL;
+    let url = process.env.SUPABASE_URL || '';
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseKey) {
+    if (url.endsWith('/rest/v1')) url = url.replace('/rest/v1', '');
+    if (url.endsWith('/rest/v1/')) url = url.replace('/rest/v1/', '');
+    
+    if (!url || !supabaseKey) {
       throw new Error("Les variables d'environnement SUPABASE_URL et SUPABASE_ANON_KEY sont requises.");
     }
     
-    supabaseInstance = createClient(supabaseUrl, supabaseKey);
+    supabaseInstance = createClient(url, supabaseKey);
   }
   
   return supabaseInstance;

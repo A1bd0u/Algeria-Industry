@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Building2, Package, 
@@ -42,6 +42,7 @@ const analyticsData = [
 const ConsolePro = () => {
   const { profile, visits, events, totalTimeSpentSec, clearLogs } = useTracking();
   const [activeTab, setActiveTab] = useState('gov-overview');
+  const [chartTimeframe, setChartTimeframe] = useState<'6m' | '1y'>('6m');
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [pendingKYC, setPendingKYC] = useState<any[]>([]);
   const [approvedKYC, setApprovedKYC] = useState<string[]>([]);
@@ -61,6 +62,11 @@ const ConsolePro = () => {
     };
     fetchKyc();
   }, []);
+
+  const showNotify = (message: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const handleApproveKYC = async (id: string, name: string) => {
     try {
@@ -119,7 +125,7 @@ const ConsolePro = () => {
                   <h3 className="text-2xl font-black text-primary uppercase tracking-tighter italic">Rôles & Permissions</h3>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Définissez les niveaux d'accès pour votre équipe interne</p>
                </div>
-               <button className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
+               <button onClick={() => showNotify("Création de rôle...", "success")} className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
                   <span>Nouveau Rôle</span>
                </button>
@@ -147,7 +153,7 @@ const ConsolePro = () => {
                           <span className="font-black text-primary">{role.users} Membres</span>
                        </div>
                     </div>
-                    <button className="w-full mt-6 py-3 bg-gray-50 rounded-xl text-[9px] font-black text-gray-400 uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Configurer les droits</button>
+                    <button onClick={() => showNotify("Redirection vers la matrice des droits d'accès", "success")} className="w-full mt-6 py-3 bg-gray-50 rounded-xl text-[9px] font-black text-gray-400 uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Configurer les droits</button>
                  </div>
                ))}
             </div>
@@ -155,28 +161,68 @@ const ConsolePro = () => {
         );
 
       case 'gov-analytics':
+        const wilayaData = chartTimeframe === '6m' ? [
+          { name: 'Alger (16)', value: 4500, color: '#1B4D2E' },
+          { name: 'Oran (31)', value: 2800, color: '#0EA5E9' },
+          { name: 'Sétif (19)', value: 2100, color: '#F59E0B' },
+          { name: 'Hassi Messaoud (30)', value: 1900, color: '#8B5CF6' },
+          { name: 'Blida (09)', value: 1400, color: '#F43F5E' },
+        ] : [
+          { name: 'Alger (16)', value: 8500, color: '#1B4D2E' },
+          { name: 'Oran (31)', value: 4800, color: '#0EA5E9' },
+          { name: 'Sétif (19)', value: 3100, color: '#F59E0B' },
+          { name: 'Hassi Messaoud (30)', value: 3000, color: '#8B5CF6' },
+          { name: 'Blida (09)', value: 2400, color: '#F43F5E' },
+        ];
+        
+        const termsData = chartTimeframe === '6m' ? [
+          { term: 'Turbine', volume: 850 },
+          { term: 'Acier', volume: 620 },
+          { term: 'Solaire', volume: 540 },
+          { term: 'HSE', volume: 480 },
+          { term: 'Valves', volume: 390 },
+        ] : [
+          { term: 'Turbine', volume: 1650 },
+          { term: 'Acier', volume: 1420 },
+          { term: 'Solaire', volume: 1140 },
+          { term: 'HSE', volume: 980 },
+          { term: 'Valves', volume: 890 },
+        ];
+
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <div className="flex justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
+                <h3 className="text-xl font-black text-primary uppercase italic px-4">Synthèse Analytique</h3>
+                <div className="flex bg-gray-50 p-1 rounded-lg">
+                  <button 
+                    onClick={() => setChartTimeframe('6m')}
+                    className={cn("px-4 py-2 rounded-md text-[10px] font-black uppercase transition-all", chartTimeframe === '6m' ? "bg-white shadow-sm text-primary" : "text-gray-400 hover:text-primary")}
+                  >
+                    6 mois
+                  </button>
+                  <button 
+                    onClick={() => setChartTimeframe('1y')}
+                    className={cn("px-4 py-2 rounded-md text-[10px] font-black uppercase transition-all", chartTimeframe === '1y' ? "bg-white shadow-sm text-primary" : "text-gray-400 hover:text-primary")}
+                  >
+                    1 an
+                  </button>
+                </div>
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-white/70 backdrop-blur-md p-8 rounded-[40px] border border-white shadow-sm font-sans text-primary">
                 <h3 className="text-xs font-black uppercase tracking-widest mb-8 italic">Intensité par Wilaya (Top 5)</h3>
                 <div className="space-y-6">
-                  {[
-                    { name: 'Alger (16)', value: 4500, color: '#1B4D2E' },
-                    { name: 'Oran (31)', value: 2800, color: '#0EA5E9' },
-                    { name: 'Sétif (19)', value: 2100, color: '#F59E0B' },
-                    { name: 'Hassi Messaoud (30)', value: 1900, color: '#8B5CF6' },
-                    { name: 'Blida (09)', value: 1400, color: '#F43F5E' },
-                  ].map((wilaya, i) => (
+                  {wilayaData.map((wilaya, i) => (
                     <div key={i}>
                       <div className="flex justify-between items-end mb-2">
                         <span className="text-[10px] font-black uppercase">{wilaya.name}</span>
-                        <span className="text-[10px] font-bold text-gray-400">{(wilaya.value / 12700 * 100).toFixed(1)}%</span>
+                        <span className="text-[10px] font-bold text-gray-400">{(wilaya.value / (chartTimeframe === '1y' ? 21800 : 12700) * 100).toFixed(1)}%</span>
                       </div>
                       <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
-                          animate={{ width: `${(wilaya.value / 4500 * 100)}%` }}
+                          animate={{ width: `${(wilaya.value / (chartTimeframe === '1y' ? 8500 : 4500) * 100)}%` }}
                           className="h-full rounded-full"
                           style={{ backgroundColor: wilaya.color }}
                         />
@@ -190,13 +236,7 @@ const ConsolePro = () => {
                 <h3 className="text-xs font-black uppercase tracking-widest mb-8 italic">Tendances de Sourcing (Search)</h3>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { term: 'Turbine', volume: 850 },
-                      { term: 'Acier', volume: 620 },
-                      { term: 'Solaire', volume: 540 },
-                      { term: 'HSE', volume: 480 },
-                      { term: 'Valves', volume: 390 },
-                    ]}>
+                    <BarChart data={termsData}>
                       <XAxis dataKey="term" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#9ca3af', fontWeight: '900', textTransform: 'uppercase'}} />
                       <YAxis hide />
                       <Tooltip 
@@ -262,7 +302,7 @@ const ConsolePro = () => {
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
                <div className="p-8 border-b border-gray-50 flex items-center justify-between">
                   <h3 className="text-xs font-black text-primary uppercase tracking-widest">Derniers Paiements Bancaires</h3>
-                  <button className="text-[10px] font-black text-secondary uppercase tracking-widest underline decoration-2 underline-offset-4">Exporter le grand livre</button>
+                  <button onClick={() => showNotify("Génération de l'export en cours...", "success")} className="text-[10px] font-black text-secondary uppercase tracking-widest underline decoration-2 underline-offset-4">Exporter le grand livre</button>
                </div>
                <div className="overflow-x-auto">
                  <table className="w-full text-left">
@@ -295,6 +335,67 @@ const ConsolePro = () => {
                     </tbody>
                  </table>
                </div>
+            </div>
+          </motion.div>
+        );
+
+      case 'gov-ads':
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-black text-primary uppercase italic">Gestion des Publicités</h3>
+                <p className="text-gray-500 mt-2">Suivi et administration des espaces publicitaires clients.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                  <h4 className="font-bold text-primary mb-6">Demandes en attente</h4>
+                  <div className="space-y-4">
+                    <div className="p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
+                       <div>
+                         <p className="font-bold text-gray-900">Tech Industry SARL</p>
+                         <p className="text-xs text-gray-500 mt-1">Espace: Page d'accueil (Bannière Haut)</p>
+                       </div>
+                       <div className="flex space-x-2">
+                          <button onClick={() => showNotify("Publicité approuvée et programmée", "success")} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors">Approuver</button>
+                          <button onClick={() => showNotify("Demande de publicité refusée", "error")} className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Refuser</button>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                  <h4 className="font-bold text-primary mb-6">Campagnes Actives</h4>
+                   <div className="bg-gray-50 p-8 text-center rounded-3xl border border-dashed border-gray-200">
+                     <Zap className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+                     <p className="font-bold text-gray-900">Aucune campagne active</p>
+                     <p className="text-xs text-gray-500 mt-1">Les campagnes approuvées apparaîtront ici.</p>
+                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                   <h4 className="font-bold text-primary mb-6">Statistiques Pubs</h4>
+                   <div className="space-y-4">
+                      <div className="flex justify-between items-center pb-4 border-b border-gray-50">
+                         <span className="text-sm text-gray-500 font-bold">Revenus Pubs (Mois)</span>
+                         <span className="font-black text-secondary">0 DZD</span>
+                      </div>
+                      <div className="flex justify-between items-center pb-4 border-b border-gray-50">
+                         <span className="text-sm text-gray-500 font-bold">Impressions Totales</span>
+                         <span className="font-black text-primary">0</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                         <span className="text-sm text-gray-500 font-bold">Clics Totaux</span>
+                         <span className="font-black text-primary">0</span>
+                      </div>
+                   </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         );
@@ -556,7 +657,7 @@ const ConsolePro = () => {
                   <h3 className="text-2xl font-black text-primary uppercase tracking-tighter italic">Base Utilisateurs</h3>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gérez les accès et les rôles des 1,240 membres</p>
                </div>
-               <button className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
+               <button onClick={() => showNotify("Création d'un membre d'équipe...", "success")} className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
                   <span>Ajouter Staff</span>
                </button>
@@ -611,7 +712,7 @@ const ConsolePro = () => {
                   <h3 className="text-2xl font-black text-primary uppercase tracking-tighter italic">Secteurs & Catégories</h3>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Organisez la hiérarchie du catalogue industriel</p>
                </div>
-               <button className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
+               <button onClick={() => showNotify("Création de catégorie...", "success")} className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
                   <span>Nouvelle Catégorie</span>
                </button>
@@ -643,7 +744,7 @@ const ConsolePro = () => {
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">{(1240)} Produits référencés sur la plateforme</p>
                </div>
                <div className="flex space-x-3">
-                  <button className="bg-white border border-gray-100 text-primary px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
+                  <button onClick={() => showNotify("Ouverture des filtres de secteur...", "success")} className="bg-white border border-gray-100 text-primary px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
                     <Filter className="h-4 w-4" />
                     <span>Filtrer par Secteur</span>
                   </button>
@@ -683,8 +784,8 @@ const ConsolePro = () => {
                           <td className="p-6 font-black text-primary text-xs">{p.score}%</td>
                           <td className="p-6 text-right">
                              <div className="flex justify-end space-x-2">
-                                <button className="p-2 bg-gray-50 text-gray-400 hover:text-primary rounded-lg transition-all"><Eye className="h-4 w-4" /></button>
-                                <button className="p-2 bg-gray-50 text-gray-400 hover:text-secondary rounded-lg transition-all"><Edit2 className="h-4 w-4" /></button>
+                                <button onClick={() => showNotify("Redirection vers la page produit...", "success")} className="p-2 bg-gray-50 text-gray-400 hover:text-primary rounded-lg transition-all"><Eye className="h-4 w-4" /></button>
+                                <button onClick={() => showNotify("Ouverture de l'éditeur de produit...", "success")} className="p-2 bg-gray-50 text-gray-400 hover:text-secondary rounded-lg transition-all"><Edit2 className="h-4 w-4" /></button>
                              </div>
                           </td>
                        </tr>
@@ -705,7 +806,7 @@ const ConsolePro = () => {
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Publiez les actualités et l'encyclopédie industrielle</p>
                </div>
                <div className="flex space-x-3">
-                  <button className="bg-white border border-gray-100 text-primary px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Nouv. Catégorie</button>
+                  <button onClick={() => showNotify("Création de catégorie en cours...", "success")} className="bg-white border border-gray-100 text-primary px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Nouv. Catégorie</button>
                   <button 
                     onClick={() => setShowArticleForm(true)}
                     className="bg-secondary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 hover:scale-105 transition-all shadow-lg shadow-secondary/20"
@@ -738,8 +839,8 @@ const ConsolePro = () => {
                              <span>{item.views}</span>
                           </div>
                           <div className="flex space-x-1">
-                             <button className="p-2 text-gray-400 hover:text-primary transition-all"><Edit2 className="h-3.5 w-3.5" /></button>
-                             <button className="p-2 text-gray-400 hover:text-red-500 transition-all"><Trash2 className="h-3.5 w-3.5" /></button>
+                             <button onClick={() => showNotify("Ouverture de l'article pour édition...", "success")} className="p-2 text-gray-400 hover:text-primary transition-all"><Edit2 className="h-3.5 w-3.5" /></button>
+                             <button onClick={() => showNotify("Article supprimé de la base de données", "error")} className="p-2 text-gray-400 hover:text-red-500 transition-all"><Trash2 className="h-3.5 w-3.5" /></button>
                           </div>
                        </div>
                     </div>
@@ -791,7 +892,7 @@ const ConsolePro = () => {
                      <div className="p-8 bg-primary rounded-[32px] text-white">
                         <h4 className="text-sm font-black uppercase tracking-tighter mb-4 italic">Sauvegarde Système</h4>
                         <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed mb-6">Dernière sauvegarde effectuée aujourd'hui à 04:00 AM sur serveurs Cloud Algeria.</p>
-                        <button className="w-full bg-secondary py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20 hover:scale-105 transition-all">Lancer Backup Manuel</button>
+                        <button onClick={() => showNotify("Sauvegarde en cours...", "success")} className="w-full bg-secondary py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20 hover:scale-105 transition-all">Lancer Backup Manuel</button>
                      </div>
                   </div>
                </div>
@@ -821,8 +922,8 @@ const ConsolePro = () => {
                           </div>
                        </div>
                        <div className="flex items-center space-x-3">
-                          <button className="px-6 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all">Publier</button>
-                          <button className="px-6 py-3 border border-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition-all">Refuser</button>
+                          <button onClick={() => showNotify("Appel d'offres publié.", "success")} className="px-6 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all">Publier</button>
+                          <button onClick={() => showNotify("Appel d'offres refusé.", "error")} className="px-6 py-3 border border-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition-all">Refuser</button>
                        </div>
                     </div>
                   ))}
@@ -1038,6 +1139,7 @@ const ConsolePro = () => {
         { id: 'gov-analytics', name: 'Analytique Avancée', icon: BarChart3 },
         { id: 'gov-telemetry', name: 'Suivi & Télémétrie', icon: Zap },
         { id: 'gov-revenue', name: 'Gestion Revenus', icon: CreditCard },
+        { id: 'gov-ads', name: 'Gestion Publicités', icon: Zap },
       ]
     },
     {
@@ -1259,7 +1361,7 @@ const ConsolePro = () => {
                       />
                     </div>
                     <div className="flex space-x-4 pt-4">
-                      <button className="flex-1 bg-primary text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Publier Maintenant</button>
+                      <button onClick={() => { showNotify("Article publié avec succès", "success"); setShowArticleForm(false); }} className="flex-1 bg-primary text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Publier Maintenant</button>
                       <button 
                         onClick={() => setShowArticleForm(false)}
                         className="px-8 border border-gray-100 text-gray-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-primary transition-all"
