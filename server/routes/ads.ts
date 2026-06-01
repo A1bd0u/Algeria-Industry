@@ -1,5 +1,6 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
+import { requireAuth } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -25,8 +26,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { name, type, url, duration } = req.body;
+  const user = (req as any).user;
   if (!name || !type) {
     return res.status(400).json({ error: 'Nom et type requis' });
   }
@@ -35,7 +37,7 @@ router.post('/', async (req, res) => {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('ads')
-      .insert([{ title: name, objective: type, duration, status: 'en_attente' }])
+      .insert([{ title: name, objective: type, duration, status: 'en_attente', user_id: user.id }])
       .select()
       .single();
       

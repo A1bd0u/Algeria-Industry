@@ -99,12 +99,18 @@ const BlogDetail = () => {
                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 border-b border-gray-100 pb-4">Partager</h3>
                    <div className="flex flex-col space-y-4">
                       {[
-                        { icon: Facebook, color: 'text-blue-600', label: 'Facebook' },
-                        { icon: Twitter, color: 'text-blue-400', label: 'Twitter' },
-                        { icon: Linkedin, color: 'text-blue-800', label: 'LinkedIn' },
-                        { icon: Share2, color: 'text-secondary', label: 'Copier le lien' },
+                        { icon: Facebook, color: 'text-blue-600', label: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                        { icon: Twitter, color: 'text-blue-400', label: 'Twitter', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}` },
+                        { icon: Linkedin, color: 'text-blue-800', label: 'LinkedIn', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}` },
+                        { icon: Share2, color: 'text-secondary', label: 'Copier le lien', isCopy: true },
                       ].map((social, i) => (
-                        <button key={i} className="flex items-center space-x-4 group text-gray-400 hover:text-primary transition-all">
+                        <button key={i} onClick={() => {
+                          if (social.isCopy) {
+                            navigator.clipboard.writeText(window.location.href);
+                          } else {
+                            window.open(social.url, '_blank', 'noopener,noreferrer');
+                          }
+                        }} className="w-full flex items-center space-x-4 group text-gray-400 hover:text-primary transition-all text-left">
                            <div className={cn("w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center transition-all group-hover:scale-110", social.color.replace('text', 'bg').concat('/10'), social.color)}>
                               <social.icon className="h-4 w-4" />
                            </div>
@@ -118,7 +124,7 @@ const BlogDetail = () => {
                    <Bookmark className="h-8 w-8 text-secondary mb-4" />
                    <h4 className="text-sm font-black text-primary uppercase tracking-tight mb-2">Sauvegarder cet article</h4>
                    <p className="text-[9px] font-medium text-gray-500 uppercase tracking-widest leading-relaxed mb-6">Retrouvez-le plus tard dans votre dashboard professionnel.</p>
-                   <button className="w-full bg-white border border-gray-100 py-3 rounded-xl text-[10px] font-black uppercase text-primary hover:border-secondary transition-all">Abonnez-vous</button>
+                   <Link to="/subscriptions" className="w-full bg-white border border-gray-100 py-3 rounded-xl text-[10px] font-black uppercase text-primary hover:border-secondary transition-all flex items-center justify-center">Abonnez-vous</Link>
                 </div>
              </div>
           </aside>
@@ -157,10 +163,10 @@ const BlogDetail = () => {
                      <h3 className="text-2xl font-black uppercase tracking-tighter mb-2 italic">Veille Industrielle</h3>
                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Recevez le condensé de l'actualité B2B chaque lundi matin.</p>
                   </div>
-                  <div className="flex-1 w-full flex bg-white/10 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <form onSubmit={(e) => { e.preventDefault(); (e.target as HTMLFormElement).reset(); }} className="flex-1 w-full flex bg-white/10 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
                      <input type="email" placeholder="VOTRE EMAIL..." className="flex-1 bg-transparent px-4 py-3 text-[10px] font-black outline-none placeholder:text-white/20" />
-                     <button className="bg-secondary px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">OK</button>
-                  </div>
+                     <button type="submit" className="bg-secondary px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">OK</button>
+                  </form>
                </div>
             </div>
           </article>

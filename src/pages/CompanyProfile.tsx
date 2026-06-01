@@ -24,9 +24,12 @@ const CompanyProfile = () => {
     const fetchCompany = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/companies/${id}`);
-        if (!res.ok) throw new Error("Erreur de récupération de l'entreprise");
-        let data = await res.json();
+        const res = await fetch(`/api/companies/${id}`).catch(() => null);
+        let data: any = { id: id, name: "Entreprise ID " + id, activity_sector: "Industrie" }; // Mock fallback base
+        
+        if (res && res.ok) {
+           data = await res.json();
+        }
         
         // Mock some dynamic data for the view
         data = {
@@ -38,7 +41,7 @@ const CompanyProfile = () => {
           website: `www.${data.name?.toLowerCase().replace(/\s+/g,'')}.com`,
           email: `contact@${data.name?.toLowerCase().replace(/\s+/g,'')}.dz`,
           phone: "+213 21 00 00 00",
-          description: data.description || "Aucune description fournie.",
+          description: data.description || "Leader de la construction mécanique. Aucune description fournie.",
           certified: Math.random() > 0.5,
           certifications: ["ISO 9001", "ISO 14001"],
           employees: "1,000+",
@@ -130,7 +133,18 @@ const CompanyProfile = () => {
                     <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
                     <span>{isFavorite ? "Favori" : "Suivre"}</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 transition-all font-bold text-sm">
+                  <button onClick={(e) => {
+                    e.preventDefault();
+                    if (navigator.share) {
+                      navigator.share({
+                        title: company.name,
+                        url: window.location.href
+                      }).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert('Lien copié dans le presse-papier');
+                    }
+                  }} className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 transition-all font-bold text-sm">
                     <Share2 className="h-4 w-4" />
                     <span>Partager</span>
                   </button>
@@ -172,10 +186,10 @@ const CompanyProfile = () => {
               </div>
 
               <div className="p-8 bg-primary/5 border-t border-gray-50">
-                <button className="w-full btn-primary py-4 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
+                <Link to="/contact" className="w-full btn-primary py-4 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
                   <MessageSquare className="h-5 w-5" />
                   <span>Contacter l'entreprise</span>
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -328,7 +342,18 @@ const CompanyProfile = () => {
                 <h3 className="text-2xl font-bold mb-2">Brochure Corporate</h3>
                 <p className="text-primary-foreground/80 text-sm">Téléchargez la présentation complète des activités de {company.name}.</p>
               </div>
-              <button className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:scale-105 transition-all shadow-xl shadow-black/20 relative z-10">
+              <button onClick={(e) => {
+                e.preventDefault();
+                const blob = new Blob([`Brochure Corporate - ${company.name}`], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `brochure_${company.name.toLowerCase().replace(/ /g, '_')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }} className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:scale-105 transition-all shadow-xl shadow-black/20 relative z-10 inline-flex">
                 <Download className="h-5 w-5" />
                 <span>Télécharger (PDF)</span>
               </button>

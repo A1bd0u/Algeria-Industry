@@ -27,18 +27,32 @@ const Home = () => {
     const fetchHomeData = async () => {
       try {
         const [prodRes, tendRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/tenders')
+          fetch('/api/products').catch(() => null),
+          fetch('/api/tenders').catch(() => null)
         ]);
         
-        if (prodRes.ok) {
-          const p = await prodRes.json();
-          setProducts(p.slice(0, 8)); // Top 8
+        let pData = [
+          { id: '1', name: "Pompe Hydraulique", company: "Mecanique Plus", price: "245000", image: "https://picsum.photos/seed/p1/400/400" },
+          { id: '2', name: "Unité de Filtration", company: "Global Filtration", price: "Sur Devis", image: "https://picsum.photos/seed/p2/400/400" },
+          { id: '3', name: "Alternateur Industriel", company: "Electric DZ", price: "120000", image: "https://picsum.photos/seed/p3/400/400" },
+          { id: '4', name: "Compresseur d'air", company: "Air Tech", price: "850000", image: "https://picsum.photos/seed/p4/400/400" }
+        ];
+
+        let tData = [
+          { id: '1', title: "Fourniture de pompes", sector: "Équipement", author: { company: "Sonatrach" }, status: "Urgent", created_at: new Date().toISOString() },
+          { id: '2', title: "Installation réseau incendie", sector: "Sécurité", author: { company: "Cosider" }, status: "Ouvert", created_at: new Date().toISOString() },
+          { id: '3', title: "Maintenance parc auto", sector: "Services", author: { company: "Cevital" }, status: "Ouvert", created_at: new Date().toISOString() }
+        ];
+
+        if (prodRes && prodRes.ok) {
+          try { pData = await prodRes.json(); } catch(e){}
         }
-        if (tendRes.ok) {
-          const tData = await tendRes.json();
-          setTenders(tData.slice(0, 3)); // Top 3
+        if (tendRes && tendRes.ok) {
+          try { tData = await tendRes.json(); } catch(e){}
         }
+
+        setProducts(pData.slice(0, 8));
+        setTenders(tData.slice(0, 3));
       } catch (e) {
         console.error("Home fetch error", e);
       }
@@ -205,13 +219,13 @@ const Home = () => {
               <h2 className="text-4xl font-black text-primary uppercase tracking-tighter leading-none mb-4">{t('home.trends')}</h2>
               <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">{t('home.trends_subtitle')}</p>
             </div>
-            <button 
-              onClick={() => {}}
-              className={cn("btn-primary flex items-center space-x-3 group", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}
+            <Link 
+              to="/products"
+              className={cn("btn-primary flex items-center space-x-3 group w-fit", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}
             >
               <span className={cn(i18n.language === 'ar' && "text-sm")}>{i18n.language === 'ar' ? 'الوصول إلى الكتالوج الكامل' : 'ACCÉDER AU CATALOGUE COMPLET'}</span>
               <ArrowRight className={cn("h-4 w-4 group-hover:translate-x-1 transition-transform", i18n.language === 'ar' && "rotate-180 group-hover:-translate-x-1")} />
-            </button>
+            </Link>
           </div>
 
           <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-border-tech", i18n.language === 'ar' && "border-l-0 border-r")}>

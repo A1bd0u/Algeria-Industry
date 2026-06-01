@@ -1,5 +1,6 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
+import { requireAuth } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -25,15 +26,16 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/rfqs - Submit a new RFQ (Demande de devis)
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { title, desiredDate, items, budget } = req.body;
+  const user = (req as any).user;
 
   try {
     const supabase = getSupabase();
     
     const { data, error } = await supabase
       .from('rfqs')
-      .insert([{ title, target_date: desiredDate, items, budget }])
+      .insert([{ title, target_date: desiredDate, items, budget, buyer: user.company || user.name }])
       .select()
       .single();
       

@@ -70,8 +70,31 @@ const Dashboard = () => {
     budget: '',
     description: '',
     location: "Alger (Rouiba / Dar el Beida)",
-    deadline: ''
+    deadline: '',
+    file_url: ''
   });
+
+  const [uploadingTenderFile, setUploadingTenderFile] = useState(false);
+
+  const handleTenderFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const formData = new FormData();
+    formData.append('file', e.target.files[0]);
+    setUploadingTenderFile(true);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTenderFormData(prev => ({ ...prev, file_url: data.url }));
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    setUploadingTenderFile(false);
+  };
 
   const [adFormData, setAdFormData] = useState({
     name: '',
@@ -90,7 +113,7 @@ const Dashboard = () => {
      const fetchData = async () => {
         try {
            const [prodRes, msgRes, favRes] = await Promise.all([
-             fetch('/api/products'),
+             fetch('/api/products/my'),
              fetch('/api/messages'),
              fetch('/api/favorites')
            ]);
@@ -187,7 +210,8 @@ const Dashboard = () => {
     const fetchTenders = async () => {
       try {
         setTendersLoading(true);
-        const res = await fetch('/api/tenders');
+        const endpoint = user?.role === 'acheteur' ? '/api/tenders/my' : '/api/tenders';
+        const res = await fetch(endpoint);
         if (res.ok) {
           let data = await res.json();
           // Convert to expected UI format
@@ -201,13 +225,7 @@ const Dashboard = () => {
              company: t.author?.company
           }));
           
-          if (user?.role === 'acheteur') {
-             // Only show user's company tenders
-             setTenders(data.filter((t: any) => t.company === user?.company));
-          } else {
-             // Fournisseur sees all
-             setTenders(data);
-          }
+          setTenders(data);
         }
       } catch (err) {
         console.error('Failed to fetch tenders:', err);
@@ -235,6 +253,29 @@ const Dashboard = () => {
     }, 1000);
   };
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [productFileUrl, setProductFileUrl] = useState('');
+
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const formData = new FormData();
+    formData.append('file', e.target.files[0]);
+    setUploadingImage(true);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProductFileUrl(data.url);
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    setUploadingImage(false);
+  };
+
   const addProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -244,6 +285,7 @@ const Dashboard = () => {
       category: formData.get('category') as string,
       price: formData.get('price') as string,
       description: formData.get('description') as string,
+      file_url: productFileUrl,
     };
     
     try {
@@ -256,6 +298,7 @@ const Dashboard = () => {
         const addedProd = await res.json();
         setProducts(prev => [addedProd, ...prev]);
         setShowProductForm(false);
+        setProductFileUrl('');
         showNotify("Le produit a été ajouté avec succès au catalogue.", "success");
       } else {
         showNotify("Erreur lors de l'ajout", "error");
@@ -276,15 +319,18 @@ const Dashboard = () => {
         body: JSON.stringify({
            title: tenderFormData.title,
            description: tenderFormData.description,
-           deadline: tenderFormData.deadline
-        }) // The API expects these params
+           deadline: tenderFormData.deadline,
+           category: tenderFormData.sector,
+           budget: tenderFormData.budget,
+           file_url: tenderFormData.file_url
+        }) 
       });
       if (res.ok) {
         const newTender = await res.json();
         setTenders(prev => [newTender, ...prev]);
         setShowTenderForm(false);
         setTenderStep(1);
-        setTenderFormData({ title: '', sector: "Énergie & Hydrocarbures", budget: '', description: '', location: "Alger (Rouiba / Dar el Beida)", deadline: '' });
+        setTenderFormData({ title: '', sector: "Énergie & Hydrocarbures", budget: '', description: '', location: "Alger (Rouiba / Dar el Beida)", deadline: '', file_url: '' });
         showNotify("Votre appel d'offre a été soumis avec succès.", "success");
       } else {
         showNotify("Erreur lors de l'ajout", "error");
@@ -1468,9 +1514,18 @@ const Dashboard = () => {
                     />
                   </div>
 
-                  <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center">
-                    <Upload className="h-6 w-6 text-gray-300 mx-auto mb-2" />
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Images ou Fiche Technique (PDF)</p>
+                  <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center relative cursor-pointer hover:bg-gray-100 transition-colors">
+                    <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleProductImageUpload} disabled={uploadingImage} />
+                    {uploadingImage ? (
+                      <Loader2 className="h-6 w-6 text-primary mx-auto mb-2 animate-spin" />
+                    ) : productFileUrl ? (
+                      <div className="text-secondary font-black text-sm uppercase tracking-widest break-all">Fichier Ajouté: {productFileUrl.split('-').pop()}</div>
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Images ou Fiche Technique (PDF)</p>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex space-x-4 pt-4">
@@ -1665,6 +1720,23 @@ const Dashboard = () => {
                                   </label>
                                 ))}
                              </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-gray-50 space-y-2 mt-6">
+                            <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Cahier des charges détaillé (PDF)</label>
+                            <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center relative cursor-pointer hover:bg-gray-100 transition-colors">
+                              <input type="file" accept=".pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleTenderFileUpload} disabled={uploadingTenderFile} />
+                              {uploadingTenderFile ? (
+                                <Loader2 className="h-6 w-6 text-primary mx-auto mb-2 animate-spin" />
+                              ) : tenderFormData.file_url ? (
+                                <div className="text-secondary font-black text-sm uppercase tracking-widest break-all">Fichier Ajouté: {tenderFormData.file_url.split('-').pop()}</div>
+                              ) : (
+                                <>
+                                  <Upload className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Joindre le cahier des charges</p>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </motion.div>
                       )}

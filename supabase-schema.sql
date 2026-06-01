@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS products (
   cat TEXT NOT NULL,
   price TEXT,
   description TEXT,
+  file_url TEXT,
   status TEXT DEFAULT 'Actif',
   owner_id UUID REFERENCES users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS tenders (
   budget NUMERIC,
   deadline TIMESTAMP WITH TIME ZONE,
   category TEXT,
+  file_url TEXT,
   status TEXT DEFAULT 'open',
   author_id UUID REFERENCES users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -40,10 +42,12 @@ CREATE TABLE IF NOT EXISTS tenders (
 -- 4. Table kyc (Vérification d'entreprise)
 CREATE TABLE IF NOT EXISTS kyc_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_name TEXT NOT NULL,
-  registration_number TEXT,
+  name TEXT NOT NULL,
+  activity TEXT,
   status TEXT DEFAULT 'pending',
-  submitted_by UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id),
+  docs JSONB,
+  date TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

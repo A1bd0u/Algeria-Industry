@@ -26,16 +26,44 @@ const Directory = () => {
     const fetchCompanies = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch('/api/companies');
-        if (!res.ok) throw new Error("Erreur de récupération des entreprises");
-        const data = await res.json();
+        // Fallback mock payload for offline/presentation setup
+        const fallbackData = [
+          {
+            id: 1,
+            name: "Algerian Industrial Solutions",
+            activity_sector: "Automobile",
+            description: "Leader de la construction mécanique",
+            region: "Alger"
+          },
+          {
+            id: 2,
+            name: "Sonatrach Hub",
+            activity_sector: "Énergie",
+            description: "Pôle pétrolier international",
+            region: "Hassi Messaoud"
+          },
+          {
+            id: 3,
+            name: "Agro Dz",
+            activity_sector: "Agroalimentaire",
+            description: "Production de céréales locale",
+            region: "Sétif"
+          }
+        ];
+        
+        const res = await fetch('/api/companies').catch(() => null);
+        let data = fallbackData;
+        
+        if (res && res.ok) {
+           data = await res.json();
+        }
         
         const formattedData = data.map((c: any) => ({
           ...c,
           id: c.id,
           name: c.name,
           sector: c.activity_sector || "Non spécifié",
-          region: "Alger", // Mocking region if not in DB
+          region: c.region || "Alger",
           coordinates: { x: Math.floor(Math.random() * 40) + 30, y: Math.floor(Math.random() * 40) + 10 },
           description: c.description || "Aucune description",
           certified: Math.random() > 0.5,

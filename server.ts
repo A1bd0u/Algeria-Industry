@@ -1,6 +1,8 @@
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { createServer as createViteServer } from 'vite';
 
 import authRoutes from './server/routes/auth';
@@ -15,10 +17,30 @@ import rfqRoutes from './server/routes/rfqs';
 import kycRoutes from './server/routes/kyc';
 import favoriteRoutes from './server/routes/favorites';
 import adRoutes from './server/routes/ads';
+import uploadRoutes from './server/routes/upload';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Trust proxy for rate limiting behind reverse proxies (like Cloud Run)
+  app.set('trust proxy', 1);
+
+  // Security HTTP Headers
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disabled for development/vite
+    crossOriginEmbedderPolicy: false
+  }));
+
+  // Global Rate Limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // Limit each IP to 200 requests per `window` (here, per 15 minutes)
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Trop de requêtes, veuillez réessayer plus tard.' }
+  });
+  app.use('/api', limiter);
 
   app.use(express.json());
   app.use(cookieParser());
@@ -36,6 +58,10 @@ async function startServer() {
   app.use('/api/kyc', kycRoutes);
   app.use('/api/favorites', favoriteRoutes);
   app.use('/api/ads', adRoutes);
+  app.use('/api/upload', uploadRoutes);
+
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   // Vite middleware setup
   if (process.env.NODE_ENV !== 'production') {

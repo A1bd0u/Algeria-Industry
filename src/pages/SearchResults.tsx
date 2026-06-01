@@ -75,9 +75,9 @@ const SearchResults = () => {
                <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest leading-relaxed mb-8 relative z-10">
                  Apparaissez en tête des résultats de recherche pour vos mots-clés stratégiques.
                </p>
-               <button className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:rotate-1 transition-all relative z-10">
+               <Link to="/contact" className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:rotate-1 transition-all relative z-10 flex items-center justify-center text-white cursor-pointer">
                  Publicité Ciblée
-               </button>
+               </Link>
             </div>
           </aside>
 

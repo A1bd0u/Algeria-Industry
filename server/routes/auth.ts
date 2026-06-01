@@ -145,6 +145,20 @@ router.post('/register', async (req, res) => {
       return res.status(500).json({ error: "Erreur lors de l'inscription dans la base de données" });
     }
 
+    // Automatically create a KYC request for 'fournisseur' / 'exposant' so the admin can review them
+    if (cRoles === 'fournisseur' || cRoles === 'exposant') {
+      await supabase.from('kyc_requests').insert([
+        {
+          user_id: newUserRow.id,
+          name: cCompany,
+          activity: 'Vente et Distribution',
+          status: 'pending',
+          date: new Date().toLocaleDateString('fr-FR'),
+          docs: ['RC', 'NIF', 'NIS', 'RIB']
+        }
+      ]);
+    }
+
     const payload = {
         id: newUserRow.id,
         name: newUserRow.name,

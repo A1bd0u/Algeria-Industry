@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 const Exhibitors = () => {
   const { i18n } = useTranslation();
@@ -165,13 +166,13 @@ const Exhibitors = () => {
               </div>
 
               <div className="flex gap-3">
-                <button className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
+                <Link to={`/directory/${exhibitor.id}`} className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
                   <Layout className="h-4 w-4" />
                   <span>Visiter le Stand</span>
-                </button>
-                <button className="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:text-secondary hover:bg-secondary/5 transition-all">
+                </Link>
+                <Link to="/contact" className="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:text-secondary hover:bg-secondary/5 transition-all">
                   <MessageSquare className="h-5 w-5" />
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}
@@ -194,12 +195,12 @@ const Exhibitors = () => {
               Ne manquez pas l'opportunité de présenter vos innovations au plus grand réseau industriel du pays.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="btn-secondary px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest shadow-2xl shadow-secondary/30">
+              <Link to="/become-exhibitor" className="btn-secondary px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest shadow-2xl shadow-secondary/30">
                 Devenir Exposant
-              </button>
-              <button className="bg-white/10 border border-white/20 px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/20 transition-all">
+              </Link>
+              <Link to="/subscriptions" className="bg-white/10 border border-white/20 px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center justify-center">
                 Voir toutes les options
-              </button>
+              </Link>
             </div>
           </div>
         </motion.div>

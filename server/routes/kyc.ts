@@ -1,10 +1,11 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
+import { requireAuth, requireRole } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
 // GET /api/kyc - Get pending KYC applications
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const supabase = getSupabase();
     
@@ -26,17 +27,26 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/kyc/:id/approve
-router.post('/:id/approve', async (req, res) => {
+router.post('/:id/approve', requireAuth, requireRole(['admin']), async (req, res) => {
   const { id } = req.params;
   try {
     const supabase = getSupabase();
     
-    const { error } = await supabase
+    // approve KYC
+    const { data: kycData, error } = await supabase
       .from('kyc_requests')
       .update({ status: 'approved' })
-      .eq('id', id);
+      .eq('id', id)
+      .select('user_id')
+      .single();
       
     if (error) throw error;
+
+    // update user isVerified status
+    if (kycData?.user_id) {
+       await supabase.from('users').update({ isVerified: true }).eq('id', kycData.user_id);
+    }
+
     return res.json({ success: true });
   } catch (err: any) {
     console.error("Supabase Error POST /kyc/:id/approve:", err);
@@ -45,7 +55,7 @@ router.post('/:id/approve', async (req, res) => {
 });
 
 // POST /api/kyc/:id/reject
-router.post('/:id/reject', async (req, res) => {
+router.post('/:id/reject', requireAuth, requireRole(['admin']), async (req, res) => {
   const { id } = req.params;
   try {
     const supabase = getSupabase();

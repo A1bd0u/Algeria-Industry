@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   BookOpen, FileText, GraduationCap, Gavel, 
   Search, ChevronRight, Download, Clock, 
@@ -85,10 +86,10 @@ const Resources = () => {
                   <Newspaper className="h-6 w-6 text-secondary" />
                   <span>Dernières publications</span>
                 </h2>
-                <button className="text-sm font-bold text-secondary hover:underline flex items-center space-x-1">
+                <Link to="/blog" className="text-sm font-bold text-secondary hover:underline flex items-center space-x-1">
                   <span>Voir tout</span>
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {articles.map((article, i) => (
@@ -112,10 +113,10 @@ const Resources = () => {
                       <p className="text-sm text-gray-600 line-clamp-2 mb-6">
                         {article.desc}
                       </p>
-                      <button className="text-primary font-bold text-sm flex items-center space-x-1 hover:translate-x-1 transition-transform">
+                      <Link to="/blog/1" className="text-primary font-bold text-sm flex items-center space-x-1 hover:translate-x-1 transition-transform">
                         <span>Lire la suite</span>
                         <ChevronRight className="h-4 w-4" />
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -133,13 +134,13 @@ const Resources = () => {
                   Développez les compétences de vos équipes avec nos modules de formation certifiants conçus par des experts.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <button className="bg-white text-secondary px-8 py-3 rounded-xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2">
+                  <Link to="/contact" className="bg-white text-secondary px-8 py-3 rounded-xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2">
                     <PlayCircle className="h-5 w-5" />
                     <span>Explorer les cours</span>
-                  </button>
-                  <button className="bg-white/10 border border-white/20 px-8 py-3 rounded-xl font-bold hover:bg-white/20 transition-all">
+                  </Link>
+                  <Link to="/contact" className="bg-white/10 border border-white/20 px-8 py-3 rounded-xl font-bold hover:bg-white/20 transition-all flex items-center justify-center">
                     En savoir plus
-                  </button>
+                  </Link>
                 </div>
               </div>
             </section>
@@ -159,25 +160,39 @@ const Resources = () => {
                   "Normes de sécurité industrielle",
                   "Régime douanier pour l'import"
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-all group cursor-pointer">
+                  <button 
+                    key={i} 
+                    onClick={() => {
+                        const blob = new Blob([`Contenu du document : ${item}`], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${item.toLowerCase().replace(/ /g, '_')}.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }} 
+                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-all group cursor-pointer text-left"
+                  >
                     <span className="text-sm text-gray-600 font-medium group-hover:text-primary">{item}</span>
                     <Download className="h-4 w-4 text-gray-300 group-hover:text-secondary" />
-                  </div>
+                  </button>
                 ))}
               </div>
-              <button className="w-full mt-6 py-3 border border-primary/10 rounded-xl text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all">
+              <Link to="/blog" className="w-full mt-6 py-3 border border-primary/10 rounded-xl text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center">
                 Voir tous les textes de loi
-              </button>
+              </Link>
             </div>
 
             <div className="bg-neutral-bg p-8 rounded-3xl border border-gray-200 border-dashed text-center">
               <Tag className="h-8 w-8 text-gray-300 mx-auto mb-4" />
               <h4 className="font-bold text-gray-500 mb-2">Besoin d'un guide spécifique ?</h4>
               <p className="text-xs text-gray-400 mb-6">Nos experts peuvent rédiger des études de marché sur mesure.</p>
-              <button className="text-secondary font-bold text-sm flex items-center justify-center space-x-1 mx-auto hover:translate-x-1 transition-transform">
+              <Link to="/contact" className="text-secondary font-bold text-sm flex items-center justify-center space-x-1 mx-auto hover:translate-x-1 transition-transform">
                 <span>Contactez un expert</span>
                 <ExternalLink className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </aside>
         </div>
