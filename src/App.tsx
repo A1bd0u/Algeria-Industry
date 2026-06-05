@@ -56,7 +56,7 @@ const queryClient = new QueryClient();
 // Placeholder components for other pages
 
 
-import Breadcrumbs from './components/Breadcrumbs';
+
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -64,7 +64,6 @@ export default function App() {
   const currentSlides = SLIDES_BY_PATH[location.pathname] || DEFAULT_SLIDES;
   const isExtranet = location.pathname.startsWith('/extranet');
   const hideHeroSlider = isExtranet || location.pathname === '/become-exhibitor';
-  const hideBreadcrumbs = isExtranet || location.pathname === '/become-exhibitor';
 
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
@@ -98,7 +97,6 @@ export default function App() {
               <div className="flex flex-col min-h-screen">
               {!isExtranet && <Navbar />}
               {!hideHeroSlider && <HeroSlider slides={currentSlides} />}
-              {!hideBreadcrumbs && <Breadcrumbs />}
               <main className="flex-grow">
                 <AnimatePresence mode="wait">
                   {/* @ts-ignore - framer-motion requires key on Routes */}
