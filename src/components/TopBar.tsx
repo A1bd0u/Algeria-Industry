@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 
 const TopBar = () => {
-  const [lang, setLang] = React.useState("FR");
-  const [showLangMenu, setShowLangMenu] = React.useState(false);
+  const [lang, setLang] = useState("FR");
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const { t, i18n } = useTranslation();
   const { currency, setCurrency } = useCurrency();
   const [showLang, setShowLang] = useState(false);
