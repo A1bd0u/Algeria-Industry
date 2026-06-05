@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  MessageSquare, X, Phone, Mail, 
-  FileText, HelpCircle, ArrowRight,
-  MessageCircle, Headset, Bell, Sparkles, Send
+import {
+  ArrowRight,
+  FileText,
+  Headset,
+  HelpCircle,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  Phone,
+  Send,
+  Sparkles,
+  X
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 

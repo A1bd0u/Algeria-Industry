@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { 
-  Mail, Phone, MapPin, Send, MessageSquare, 
-  Clock, Globe, Facebook, Linkedin, Twitter, 
-  ChevronDown, ChevronUp, HelpCircle, CheckCircle2
+import {
+  CheckCircle2,
+  ChevronDown, ChevronUp,
+  Clock,
+  Facebook,
+  Globe,
+  HelpCircle,
+  Linkedin,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Send,
+  Twitter
 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useState } from 'react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -125,9 +134,9 @@ const Contact = () => {
               <div className="mt-12 pt-8 border-t border-gray-100">
                 <p className="text-sm font-bold text-primary mb-4">Suivez-nous</p>
                 <div className="flex space-x-4">
-                  <a href="#" className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Linkedin className="h-5 w-5" /></a>
-                  <a href="#" className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Facebook className="h-5 w-5" /></a>
-                  <a href="#" className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Twitter className="h-5 w-5" /></a>
+                  <a href="#" onClick={(e) => e.preventDefault()} className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Linkedin className="h-5 w-5" /></a>
+                  <a href="#" onClick={(e) => e.preventDefault()} className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Facebook className="h-5 w-5" /></a>
+                  <a href="#" onClick={(e) => e.preventDefault()} className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:bg-primary hover:text-white transition-all"><Twitter className="h-5 w-5" /></a>
                 </div>
               </div>
             </div>

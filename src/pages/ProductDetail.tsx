@@ -1,23 +1,42 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, ShoppingCart, Share2, Heart, 
-  CheckCircle2, Ruler, ShieldCheck, Truck, 
-  FileText, Star, MessageSquare, Package, 
-  ArrowRight, Layers, Settings, Globe,
-  GitCompare
+import {
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  GitCompare,
+  Globe,
+  Heart,
+  Layers,
+  MessageSquare,
+  Share2,
+  ShieldCheck,
+  Star,
+  Truck
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from '../lib/utils';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ProductDetailSkeleton } from '../components/Skeleton';
+import { Product as IProduct, useComparison } from '../context/ComparisonContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { useComparison, Product as IProduct } from '../context/ComparisonContext';
+import { cn } from '../lib/utils';
 
 const ProductDetail = () => {
+  const [activeTab, setActiveTab] = React.useState('description');
   const { id } = useParams();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const { comparedProducts, addToCompare, removeFromCompare } = useComparison();
   const [activeImage, setActiveImage] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Mock product data logic inside useEffect to simulate fetch
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [id]);
 
   // Mock product data logic
   const product = {
@@ -63,6 +82,10 @@ const ProductDetail = () => {
     }
   };
 
+  if (isLoading) {
+    return <ProductDetailSkeleton />;
+  }
+
   return (
     <div className="bg-neutral-bg min-h-screen pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -89,10 +112,10 @@ const ProductDetail = () => {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-6 right-6 flex flex-col space-y-3">
-                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-error transition-colors">
+                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-error transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                   <Heart className="h-5 w-5" />
                 </button>
-                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-primary transition-colors">
+                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-primary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                   <Share2 className="h-5 w-5" />
                 </button>
               </div>
@@ -172,7 +195,7 @@ const ProductDetail = () => {
                     <GitCompare className="h-5 w-5" />
                     <span>{isCompared ? "Comparé" : "Comparer"}</span>
                   </button>
-                  <button className="bg-neutral-bg text-primary py-4 rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-100 transition-all border border-gray-100">
+                  <button className="bg-neutral-bg text-primary py-4 rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-100 transition-all border border-gray-100" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                     <MessageSquare className="h-5 w-5" />
                     <span>Contact Direct</span>
                   </button>
@@ -217,19 +240,44 @@ const ProductDetail = () => {
             {/* Tabs for detailed content */}
             <div className="space-y-6">
               <div className="flex space-x-8 border-b border-gray-200">
-                <button className="pb-4 border-b-2 border-secondary text-sm font-black uppercase tracking-widest text-primary">Description</button>
-                <button className="pb-4 border-b-2 border-transparent text-sm font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-all">Spécifications</button>
-                <button className="pb-4 border-b-2 border-transparent text-sm font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-all">Téléchargements</button>
+                <button className={`pb-4 border-b-2 ${activeTab === 'description' ? 'border-secondary text-primary' : 'border-transparent text-gray-400 hover:text-primary'} text-sm font-black uppercase tracking-widest transition-all`} onClick={() => setActiveTab('description')}>Description</button>
+                <button className={`pb-4 border-b-2 ${activeTab === 'specs' ? 'border-secondary text-primary' : 'border-transparent text-gray-400 hover:text-primary'} text-sm font-black uppercase tracking-widest transition-all`} onClick={() => setActiveTab('specs')}>Spécifications</button>
+                <button className={`pb-4 border-b-2 ${activeTab === 'downloads' ? 'border-secondary text-primary' : 'border-transparent text-gray-400 hover:text-primary'} text-sm font-black uppercase tracking-widest transition-all`} onClick={() => setActiveTab('downloads')}>Téléchargements</button>
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                {Object.entries(product.specs).map(([key, val], i) => (
-                  <div key={i} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{key}</span>
-                    <span className="text-sm font-bold text-primary">{val as string}</span>
-                  </div>
-                ))}
-              </div>
+              
+              {activeTab === 'description' && (
+                <div className="prose prose-sm max-w-none text-gray-600">
+                  <p>Description détaillée du produit {product.name} par {product.company}. Conçu pour les professionnels exigeants, ce produit offre une fiabilité exceptionnelle et des performances de pointe dans son domaine d'application.</p>
+                </div>
+              )}
+              {activeTab === 'specs' && (
+                <div className="grid grid-cols-1 gap-4">
+                  {Object.entries(product.specs).map(([key, val], i) => (
+                    <div key={i} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{key}</span>
+                      <span className="text-sm font-bold text-primary">{val as string}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'downloads' && (
+                <div className="space-y-3">
+                  <button onClick={() => {
+                     const a = document.createElement('a');
+                     a.href = URL.createObjectURL(new Blob(['Fiche PDF'], {type: 'application/pdf'}));
+                     a.download = `fiche_${product.name.toLowerCase().replace(/ /g, '_')}.pdf`;
+                     a.click();
+                  }} className="flex items-center space-x-3 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all text-left w-full">
+                     <span className="bg-primary/5 p-2 rounded-lg text-primary">📄</span>
+                     <div>
+                       <p className="text-sm font-bold text-primary">Manuel d'utilisation</p>
+                       <p className="text-[10px] text-gray-400 uppercase tracking-widest">PDF - 2.4 MB</p>
+                     </div>
+                  </button>
+                </div>
+              )}
             </div>
+  
           </div>
         </div>
       </div>

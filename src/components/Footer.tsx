@@ -1,7 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Building2, Mail, Phone, MapPin, Facebook, Linkedin, Twitter, ShieldCheck } from 'lucide-react';
+import { Building2, Facebook, Linkedin, Mail, MapPin, Phone, ShieldCheck, Twitter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const Footer = () => {
@@ -89,7 +88,7 @@ const Footer = () => {
             </ul>
             <div className={cn("flex space-x-3 mt-10", i18n.language === 'ar' && "space-x-reverse justify-end")}>
               {[Linkedin, Facebook, Twitter].map((Icon, i) => (
-                <a key={i} href="#" className="bg-white/5 p-2.5 border border-white/10 hover:bg-secondary hover:border-secondary transition-all">
+                <a key={i} href="#" onClick={(e) => e.preventDefault()} className="bg-white/5 p-2.5 border border-white/10 hover:bg-secondary hover:border-secondary transition-all">
                   <Icon className="h-4 w-4" />
                 </a>
               ))}

@@ -1,14 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  Building2, MapPin, Globe, Mail, Phone, 
-  Award, Users, Calendar, FileText, Package, 
-  ChevronRight, ExternalLink, ShieldCheck, Star,
-  MessageSquare, Download, Share2, Heart,
-  Loader2, AlertCircle
+import {
+  AlertCircle,
+  Award,
+  Building2,
+  Calendar,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  FileText,
+  Globe,
+  Heart,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Package,
+  Phone,
+  Share2,
+  ShieldCheck, Star,
+  Users
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ProfileSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const CompanyProfile = () => {
   const { id } = useParams();
@@ -71,12 +85,7 @@ const CompanyProfile = () => {
   }, [id]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-neutral-bg flex flex-col items-center justify-center">
-         <Loader2 className="h-12 w-12 text-secondary animate-spin mb-4" />
-         <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Chargement du profil...</p>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (error || !company) {
@@ -134,17 +143,17 @@ const CompanyProfile = () => {
                     <span>{isFavorite ? "Favori" : "Suivre"}</span>
                   </button>
                   <button onClick={(e) => {
-                    e.preventDefault();
-                    if (navigator.share) {
-                      navigator.share({
-                        title: company.name,
-                        url: window.location.href
-                      }).catch(console.error);
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Lien copié dans le presse-papier');
-                    }
-                  }} className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 transition-all font-bold text-sm">
+      e.preventDefault();
+      if (navigator.share) {
+        navigator.share({
+          title: document.title,
+          url: window.location.href
+        }).catch(console.error);
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Lien copié dans le presse-papier !");
+      }
+    }} className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 transition-all font-bold text-sm">
                     <Share2 className="h-4 w-4" />
                     <span>Partager</span>
                   </button>
@@ -163,7 +172,7 @@ const CompanyProfile = () => {
                   <Globe className="h-5 w-5 text-secondary mt-0.5" />
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Site Web</p>
-                    <a href="#" className="text-sm text-primary font-bold hover:underline flex items-center space-x-1">
+                    <a href="#" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="text-sm text-primary font-bold hover:underline flex items-center space-x-1">
                       <span>{company.website}</span>
                       <ExternalLink className="h-3 w-3" />
                     </a>
@@ -186,10 +195,13 @@ const CompanyProfile = () => {
               </div>
 
               <div className="p-8 bg-primary/5 border-t border-gray-50">
-                <Link to="/contact" className="w-full btn-primary py-4 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
+                <button onClick={(e) => {
+      e.preventDefault();
+      window.location.href = `mailto:contact@${company.name.toLowerCase().replace(/ /g, '')}.com?subject=Demande de contact`;
+    }} className="w-full btn-primary py-4 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
                   <MessageSquare className="h-5 w-5" />
                   <span>Contacter l'entreprise</span>
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -324,7 +336,7 @@ const CompanyProfile = () => {
                               <span className="bg-success/10 text-success px-2 py-0.5 rounded">Ouvert</span>
                             </div>
                           </div>
-                          <button className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all">
+                          <button className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                             <ChevronRight className="h-5 w-5" />
                           </button>
                         </div>
@@ -343,17 +355,12 @@ const CompanyProfile = () => {
                 <p className="text-primary-foreground/80 text-sm">Téléchargez la présentation complète des activités de {company.name}.</p>
               </div>
               <button onClick={(e) => {
-                e.preventDefault();
-                const blob = new Blob([`Brochure Corporate - ${company.name}`], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `brochure_${company.name.toLowerCase().replace(/ /g, '_')}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-              }} className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:scale-105 transition-all shadow-xl shadow-black/20 relative z-10 inline-flex">
+      e.preventDefault();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['Brochure'], {type: 'application/pdf'}));
+      a.download = `brochure_${company.name.toLowerCase().replace(/ /g, '_')}.pdf`;
+      a.click();
+    }} className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:scale-105 transition-all shadow-xl shadow-black/20 relative z-10 inline-flex">
                 <Download className="h-5 w-5" />
                 <span>Télécharger (PDF)</span>
               </button>

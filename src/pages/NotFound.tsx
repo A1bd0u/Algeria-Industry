@@ -1,9 +1,8 @@
-import React from 'react';
+import { AlertCircle, Home, Search } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Home, Search } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const NotFound = () => {
   const { i18n } = useTranslation();

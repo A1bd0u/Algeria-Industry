@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { 
-  Building2, MapPin, Globe as GlobeIcon, Users, 
-  Search, ShieldCheck, Star, ArrowRight, MessageSquare,
-  Layout, Briefcase, Factory, Award
+import {
+  Factory,
+  Layout,
+  MapPin,
+  MessageSquare,
+  Search, ShieldCheck, Star
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const Exhibitors = () => {
   const { i18n } = useTranslation();
@@ -99,7 +101,7 @@ const Exhibitors = () => {
               <option>Tous les Secteurs</option>
               {sectors.slice(1).map(s => <option key={s}>{s}</option>)}
             </select>
-            <button className="btn-primary px-10 py-4 rounded-2xl">
+            <button onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="btn-primary py-4 px-10 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all text-center inline-block">
               <span className="text-xs font-black uppercase tracking-widest">Filtrer</span>
             </button>
           </div>

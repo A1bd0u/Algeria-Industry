@@ -1,65 +1,60 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'motion/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Navbar from './components/Navbar';
+import { AnimatePresence } from 'motion/react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import BackToTop from './components/BackToTop';
 import Footer from './components/Footer';
 import HelpWidget from './components/HelpWidget';
-import BackToTop from './components/BackToTop';
-import ScrollToTop from './components/ScrollToTop';
 import HeroSlider from './components/HeroSlider';
-import { SLIDES_BY_PATH, DEFAULT_SLIDES } from './constants/slides';
+import Navbar from './components/Navbar';
 import PageTransition from './components/PageTransition';
-import Home from './pages/Home';
-import Directory from './pages/Directory';
+import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
+import { DEFAULT_SLIDES, SLIDES_BY_PATH } from './constants/slides';
+import BecomeExhibitor from './pages/BecomeExhibitor';
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import CompanyProfile from './pages/CompanyProfile';
-import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
-import Tenders from './pages/Tenders';
+import Compare from './pages/Compare';
+import ConsolePro from './pages/ConsolePro';
+import Contact from './pages/Contact';
+import Dashboard from './pages/Dashboard';
+import Directory from './pages/Directory';
+import Events from './pages/Events';
 import Exhibitors from './pages/Exhibitors';
-import Catalogues from './pages/Catalogues';
+import FAQ from './pages/FAQ';
+import Home from './pages/Home';
+import KYCUpload from './pages/KYCUpload';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import NotFound from './pages/NotFound';
+import Privacy from './pages/Privacy';
+import ProductDetail from './pages/ProductDetail';
+import Products from './pages/Products';
 import Register from './pages/Register';
 import RegisterSuccess from './pages/RegisterSuccess';
-import Dashboard from './pages/Dashboard';
-import Subscriptions from './pages/Subscriptions';
-import VirtualShow from './pages/VirtualShow';
 import Resources from './pages/Resources';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import Contact from './pages/Contact';
-import FAQ from './pages/FAQ';
-import Blog from './pages/Blog';
-import Events from './pages/Events';
-import BecomeExhibitor from './pages/BecomeExhibitor';
-import ConsolePro from './pages/ConsolePro';
-import SearchResults from './pages/SearchResults';
-import TenderDetail from './pages/TenderDetail';
-import BlogDetail from './pages/BlogDetail';
 import RFQForm from './pages/RFQForm';
-import Compare from './pages/Compare';
-import NotFound from './pages/NotFound';
-import ProtectedRoute from './components/ProtectedRoute';
+import SearchResults from './pages/SearchResults';
+import Subscriptions from './pages/Subscriptions';
+import TenderDetail from './pages/TenderDetail';
+import Tenders from './pages/Tenders';
+import Terms from './pages/Terms';
+import VirtualShow from './pages/VirtualShow';
 
-import { CurrencyProvider } from './context/CurrencyContext';
-import { ComparisonProvider } from './context/ComparisonContext';
-import { AuthProvider } from './context/AuthContext';
-import { TrackingProvider } from './context/TrackingContext';
-import ComparisonBar from './components/ComparisonBar';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import ComparisonBar from './components/ComparisonBar';
+import { AuthProvider } from './context/AuthContext';
+import { ComparisonProvider } from './context/ComparisonContext';
+import { CurrencyProvider } from './context/CurrencyContext';
+import { TrackingProvider } from './context/TrackingContext';
 
 // Create a client for React Query (API data management)
 const queryClient = new QueryClient();
 
 // Placeholder components for other pages
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="min-h-[60vh] flex items-center justify-center bg-neutral-bg">
-    <div className="text-center">
-      <h2 className="text-3xl font-black text-primary mb-4 uppercase tracking-tighter">{title}</h2>
-      <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Cette page est en cours de développement technique.</p>
-    </div>
-  </div>
-);
+
 
 import Breadcrumbs from './components/Breadcrumbs';
 
@@ -68,6 +63,8 @@ export default function App() {
   const location = useLocation();
   const currentSlides = SLIDES_BY_PATH[location.pathname] || DEFAULT_SLIDES;
   const isExtranet = location.pathname.startsWith('/extranet');
+  const hideHeroSlider = isExtranet || location.pathname === '/become-exhibitor';
+  const hideBreadcrumbs = isExtranet || location.pathname === '/become-exhibitor';
 
   useEffect(() => {
     const handleLanguageChange = (lng: string) => {
@@ -100,11 +97,12 @@ export default function App() {
               <ScrollToTop />
               <div className="flex flex-col min-h-screen">
               {!isExtranet && <Navbar />}
-              {!isExtranet && <HeroSlider slides={currentSlides} />}
-              <Breadcrumbs />
+              {!hideHeroSlider && <HeroSlider slides={currentSlides} />}
+              {!hideBreadcrumbs && <Breadcrumbs />}
               <main className="flex-grow">
                 <AnimatePresence mode="wait">
-                  <Routes location={location}>
+                  {/* @ts-ignore - framer-motion requires key on Routes */}
+                  <Routes location={location} key={location.pathname}>
                       <Route path="/" element={<PageTransition><Home /></PageTransition>} />
                       <Route path="/directory" element={<PageTransition><Directory /></PageTransition>} />
                       <Route path="/directory/:id" element={<PageTransition><CompanyProfile /></PageTransition>} />
@@ -121,8 +119,17 @@ export default function App() {
                           </PageTransition>
                         </ProtectedRoute>
                       } />
+                      <Route path="/kyc-upload" element={
+                        <ProtectedRoute>
+                          <PageTransition>
+                            <KYCUpload />
+                          </PageTransition>
+                        </ProtectedRoute>
+                      } />
                       <Route path="/virtual-show" element={<PageTransition><VirtualShow /></PageTransition>} />
                       <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                      <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+                      <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
                       <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
                       <Route path="/register-success" element={<PageTransition><RegisterSuccess /></PageTransition>} />
                       <Route path="/subscriptions" element={<PageTransition><Subscriptions /></PageTransition>} />

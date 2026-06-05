@@ -1,19 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, User, CreditCard, Heart, Bell, FileText, 
-  Package, Building2, BarChart3, LogOut, ChevronRight, 
-  TrendingUp, Users, MessageSquare, ArrowUpRight, Plus,
-  ShieldCheck, Search, Phone, Video, Info, Zap, Send, X,
-  CheckCircle, AlertTriangle, Loader2, Upload, Trash2, Edit2
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  Building2,
+  CheckCircle,
+  ChevronRight,
+  CreditCard,
+  Edit2,
+  FileText,
+  Heart,
+  Info,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  MessageSquare,
+  Package,
+  Phone,
+  Plus,
+  Search,
+  Send,
+  ShieldCheck,
+  Trash2,
+  TrendingUp,
+  Upload,
+  User,
+  Users,
+  Video,
+  X,
+  Zap
 } from 'lucide-react';
-import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, AreaChart, Area 
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { cn } from '../lib/utils';
 
 
 // Mock data for charts
@@ -89,6 +118,9 @@ const Dashboard = () => {
       if (res.ok) {
         const data = await res.json();
         setTenderFormData(prev => ({ ...prev, file_url: data.url }));
+      } else {
+        const errText = await res.text();
+        console.error('Erreur upload tender file:', res.status, errText);
       }
     } catch(err) {
       console.error(err);
@@ -550,7 +582,7 @@ const Dashboard = () => {
                        }}
                      />
                   </div>
-                  <button className="absolute -bottom-2 -right-2 p-2 bg-secondary text-white rounded-xl shadow-lg border-2 border-white hover:scale-110 transition-all">
+                  <button className="absolute -bottom-2 -right-2 p-2 bg-secondary text-white rounded-xl shadow-lg border-2 border-white hover:scale-110 transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                      <Edit2 className="h-3 w-3" />
                   </button>
                </div>
@@ -633,7 +665,7 @@ const Dashboard = () => {
               </div>
               <div className="flex-1 overflow-y-auto no-scrollbar">
                 {[
-                  { name: 'Global Filtration DZ', last: messages[messages.length-1].text, time: messages[messages.length-1].time, unread: 2, online: true },
+                  { name: 'Global Filtration DZ', last: messages.length > 0 ? messages[messages.length-1].text : 'Bonjour, nous sommes intéressés...', time: messages.length > 0 ? messages[messages.length-1].time : '10:42', unread: 2, online: true },
                   { name: 'Mecanique Plus', last: 'Merci pour votre demande.', time: 'Hier', unread: 0, online: false },
                   { name: 'Sonatrach Procurement', last: 'Le dossier est complet.', time: 'Lundi', unread: 0, online: true },
                 ].map((msg, i) => (
@@ -643,7 +675,7 @@ const Dashboard = () => {
                       "w-full p-6 text-left flex items-start space-x-4 border-b border-gray-50 transition-all",
                       i === 0 ? "bg-secondary text-white" : "hover:bg-gray-50"
                     )}
-                  >
+                   onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                     <div className="relative shrink-0">
                       <div className="w-12 h-12 bg-gray-200 rounded-2xl flex items-center justify-center font-black text-primary">
                         {msg.name.charAt(0)}
@@ -1195,7 +1227,7 @@ const Dashboard = () => {
                        ))}
                     </ul>
                     {!plan.active && (
-                       <button className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed">Plan actuel</button>
+                       <button className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-not-allowed" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>Plan actuel</button>
                     )}
                  </div>
                ))}
@@ -1447,6 +1479,39 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+
+          {!user?.isVerified && (user?.role === 'fournisseur' || user?.role === 'exposant') && (
+            <motion.div 
+               initial={{ opacity: 0, y: -10 }} 
+               animate={{ opacity: 1, y: 0 }} 
+               className={`mb-8 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  user?.companyStatus === 'pending' ? 'bg-blue-50 border border-blue-200' : 'bg-orange-50 border border-orange-200'
+               }`}
+            >
+               <div className="flex items-start space-x-4">
+                  <div className={`p-3 bg-white rounded-2xl shadow-sm shrink-0 ${
+                     user?.companyStatus === 'pending' ? 'text-blue-500' : 'text-orange-500'
+                  }`}>
+                     {user?.companyStatus === 'pending' ? <Building2 className="h-6 w-6" /> : <AlertTriangle className="h-6 w-6" />}
+                  </div>
+                  <div>
+                     <h3 className="font-black text-primary uppercase text-sm mt-1">
+                       {user?.companyStatus === 'pending' ? 'Vérification en cours' : 'Vérification de Profil Requise (KYC)'}
+                     </h3>
+                     <p className="text-xs text-gray-600 mt-1">
+                       {user?.companyStatus === 'pending' 
+                        ? 'Vos documents légaux ont été transmis et sont actuellement en cours de vérification par nos équipes. Vous serez notifié dès que votre compte sera validé.' 
+                        : 'Votre entreprise n\'est pas encore vérifiée. Vous devez soumettre vos documents légaux pour débloquer toutes les fonctionnalités et publier au catalogue.'}
+                     </p>
+                  </div>
+               </div>
+               {user?.companyStatus !== 'pending' && (
+                  <Link to="/kyc-upload" className="bg-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all whitespace-nowrap shadow-lg shadow-primary/20 shrink-0">
+                     Transmettre mes documents
+                  </Link>
+               )}
+            </motion.div>
+          )}
 
           {/* Main View Area */}
           <AnimatePresence mode="wait">

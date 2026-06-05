@@ -1,13 +1,18 @@
-import React from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { 
-  Search, Filter, Package, Building2, 
-  ChevronRight, ArrowUpRight, Inbox,
-  Zap, Globe, ShieldCheck
+import {
+  ArrowUpRight,
+  Building2,
+  ChevronRight,
+  Filter,
+  Globe,
+  Inbox,
+  Package,
+  Search,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Link, useSearchParams } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -75,7 +80,7 @@ const SearchResults = () => {
                <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest leading-relaxed mb-8 relative z-10">
                  Apparaissez en tête des résultats de recherche pour vos mots-clés stratégiques.
                </p>
-               <Link to="/contact" className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:rotate-1 transition-all relative z-10 flex items-center justify-center text-white cursor-pointer">
+               <Link to="/company-profile" className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:rotate-1 transition-all relative z-10 flex items-center justify-center text-white cursor-pointer">
                  Publicité Ciblée
                </Link>
             </div>
@@ -146,7 +151,7 @@ const SearchResults = () => {
                           </div>
                         </div>
                       </div>
-                      <button className="hidden sm:flex items-center space-x-2 px-6 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-primary group-hover:bg-secondary group-hover:text-white transition-all">
+                      <button className="hidden sm:flex items-center space-x-2 px-6 py-3 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-primary group-hover:bg-secondary group-hover:text-white transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                         <span>Voir profil</span>
                         <ChevronRight className="h-3.5 w-3.5" />
                       </button>

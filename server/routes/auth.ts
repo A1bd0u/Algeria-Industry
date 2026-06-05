@@ -21,12 +21,22 @@ router.get('/me', async (req, res) => {
       const supabase = getSupabase();
       const { data: foundUser, error } = await supabase
         .from('users')
-        .select('*')
+        .select('*, companies!users_company_id_fkey(status)')
         .eq('id', decoded.id)
         .single();
         
       if (foundUser && !error) {
         foundUser.isVerified = Boolean(foundUser.isVerified);
+        
+        let cStatus = null;
+        if (foundUser.companies && foundUser.companies.status) {
+           cStatus = foundUser.companies.status;
+        } else if (Array.isArray(foundUser.companies) && foundUser.companies.length > 0 && foundUser.companies[0].status) {
+           cStatus = foundUser.companies[0].status;
+        }
+        
+        foundUser.companyStatus = cStatus;
+        delete foundUser.companies; // optional cleanup
         return res.json({ user: foundUser });
       }
     } catch (dbError) {
@@ -54,12 +64,19 @@ router.post('/login', async (req, res) => {
     // Check if exists
     const { data: user, error } = await supabase
       .from('users')
-      .select('*')
+      .select('*, companies!users_company_id_fkey(status)')
       .ilike('email', email)
       .maybeSingle();
 
     if (!user || error) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    }
+
+    const { companies, ...userData } = user;
+    if (companies && !Array.isArray(companies)) {
+       (userData as any).companyStatus = (companies as any).status;
+    } else if (Array.isArray(companies) && companies.length > 0) {
+       (userData as any).companyStatus = companies[0].status;
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash || '');
@@ -78,15 +95,14 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '72h' });
 
-    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 72 * 60 * 60 * 1000
     });
 
-    return res.json({ user: payload });
+    return res.json({ user: { ...payload, companyStatus: (userData as any).companyStatus } });
   } catch (err: any) {
     console.error("Login Error:", err);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -142,21 +158,34 @@ router.post('/register', async (req, res) => {
       
     if (insertError || !newUserRow) {
       console.error(insertError);
-      return res.status(500).json({ error: "Erreur lors de l'inscription dans la base de données" });
+      return res.status(500).json({ error: "Erreur lors de l'inscription dans la base de données: " + (insertError?.message || JSON.stringify(insertError)) });
     }
 
-    // Automatically create a KYC request for 'fournisseur' / 'exposant' so the admin can review them
+    // Automatically create a company for 'fournisseur' / 'exposant'
     if (cRoles === 'fournisseur' || cRoles === 'exposant') {
-      await supabase.from('kyc_requests').insert([
-        {
-          user_id: newUserRow.id,
-          name: cCompany,
-          activity: 'Vente et Distribution',
-          status: 'pending',
-          date: new Date().toLocaleDateString('fr-FR'),
-          docs: ['RC', 'NIF', 'NIS', 'RIB']
+      try {
+        // Create the company entity
+        const { data: companyRow, error: companyError } = await supabase
+          .from('companies')
+          .insert([
+            {
+              name: cCompany,
+              owner_id: newUserRow.id,
+              status: 'unverified'
+            }
+          ])
+          .select()
+          .single();
+
+        if (companyRow && !companyError) {
+          // Link user to the new company 
+          await supabase.from('users').update({ company_id: companyRow.id }).eq('id', newUserRow.id);
+        } else {
+          console.error("Erreur création company: ", companyError);
         }
-      ]);
+      } catch (err) {
+        console.error("KYC Generation Error: ", err);
+      }
     }
 
     const payload = {
@@ -174,12 +203,10 @@ router.post('/register', async (req, res) => {
       { expiresIn: '72h' }
     );
 
-    const isProduction = process.env.NODE_ENV === 'production';
-
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 72 * 60 * 60 * 1000
     });
 
@@ -190,11 +217,68 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// API - Auth - Forgot Password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Veuillez fournir une adresse email' });
+  }
+
+  try {
+    const supabase = getSupabase();
+    // Simulate checking if user exists
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (!user) {
+      // Don't leak that the email doesn't exist for security
+      return res.json({ success: true, message: 'Si cette adresse existe, un email a été envoyé.' });
+    }
+
+    // In a production backend, generate a secure token, store it with expiration, and send email
+    // For this prototype, we simulate a successful email send.
+
+    return res.json({ success: true, message: 'Si cette adresse existe, un email a été envoyé.' });
+  } catch (err: any) {
+    console.error("Forgot Password Error:", err);
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// API - Auth - Reset Password
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Le jeton de réinitialisation et le nouveau mot de passe sont requis' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' });
+  }
+
+  try {
+    // In a production backend, we would verify the token against the database, check expiration, 
+    // hash the new password, and update the user record.
+    
+    // For prototype, simulate success
+    return res.json({ success: true, message: 'Votre mot de passe a été réinitialisé avec succès.' });
+  } catch (err: any) {
+    console.error("Reset Password Error:", err);
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
 // API - Auth - Logout
 router.post('/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    sameSite: 'strict'
+    secure: true,
+    sameSite: 'none'
   });
   return res.json({ success: true, message: 'Déconnexion réussie' });
 });

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { Slide } from '../constants/slides';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Slide } from '../constants/slides';
+import { cn } from '../lib/utils';
 
 interface HeroSliderProps {
   slides: Slide[];
 }
 
 const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
   const activeSlide = slides[current] || slides[0];
 
   return (
-    <div className={cn("relative h-[450px] md:h-[500px] w-full overflow-hidden bg-primary border-b border-border-tech", i18n.language === 'ar' && "font-arabic")}>
+    <div className={cn("relative h-[200px] md:h-[250px] w-full overflow-hidden bg-primary border-b border-border-tech", i18n.language === 'ar' && "font-arabic")}>
       {/* Technical Grid Background Overlay */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10" 
            style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
@@ -58,7 +58,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                 initial={{ x: i18n.language === 'ar' ? 50 : -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="hidden md:block w-48 h-64 lg:w-64 lg:h-80 flex-shrink-0 bg-white/5 backdrop-blur-sm p-4 border border-white/10"
+                className="hidden md:block w-32 h-40 lg:w-48 lg:h-56 flex-shrink-0 bg-white/5 backdrop-blur-sm p-3 border border-white/10"
               >
                 <img 
                   src={activeSlide.productImg} 
@@ -72,34 +72,34 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                   initial={{ opacity: 0, x: i18n.language === 'ar' ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
-                  className={cn("flex items-center space-x-3 mb-4", i18n.language === 'ar' && "flex-row-reverse space-x-reverse justify-end")}
+                  className={cn("flex items-center space-x-2 mb-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse justify-end")}
                 >
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-secondary">
+                  <span className="text-[9px] font-black uppercase tracking-[0.3em] text-secondary">
                     {i18n.language === 'ar' ? 'المواصفات الفنية' : 'Technical Specification'}
                   </span>
-                  <div className="h-[1px] w-12 bg-secondary" />
+                  <div className="h-[1px] w-8 bg-secondary" />
                 </motion.div>
                 <motion.h2 
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-2 uppercase"
+                  className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tighter mb-1 uppercase"
                 >
                   {activeSlide.title}
                 </motion.h2>
                 <motion.h3 
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-xl md:text-2xl font-bold text-white/90 mb-6 font-mono tracking-tighter"
+                  className="text-lg md:text-xl font-bold text-white/90 mb-3 font-mono tracking-tighter"
                 >
                   {activeSlide.subtitle}
                 </motion.h3>
                 <motion.p 
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-sm md:text-base font-medium text-white/60 uppercase tracking-widest max-w-md leading-relaxed"
+                  className="text-xs font-medium text-white/60 uppercase tracking-widest max-w-sm leading-relaxed hidden lg:block"
                 >
                   {activeSlide.description}
                 </motion.p>
@@ -116,38 +116,38 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                 i18n.language === 'ar' ? "lg:items-start border-r pr-12 pl-0" : "lg:items-end border-l pl-12"
               )}
             >
-              <div className="bg-white/10 backdrop-blur-sm p-8 border border-white/10 mb-8">
+              <div className="bg-white/10 backdrop-blur-sm p-4 border border-white/10 mb-4">
                 <img 
                   src={activeSlide.brandLogo} 
                   alt={activeSlide.brandName} 
-                  className="h-10 w-auto brightness-0 invert opacity-80"
+                  className="h-8 w-auto brightness-0 invert opacity-80"
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <h4 className="text-4xl font-black tracking-tighter mb-2 uppercase">{activeSlide.brandName}</h4>
-              <p className="text-[11px] font-black text-secondary uppercase tracking-[0.4em]">{activeSlide.brandTagline}</p>
+              <h4 className="text-2xl font-black tracking-tighter mb-1 uppercase">{activeSlide.brandName}</h4>
+              <p className="text-[9px] font-black text-secondary uppercase tracking-[0.3em]">{activeSlide.brandTagline}</p>
             </motion.div>
           </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Slide Counter (Technical Style) */}
-      <div className={cn("absolute bottom-10 z-30 flex items-baseline space-x-2 text-white/40 font-mono", i18n.language === 'ar' ? "left-10 space-x-reverse" : "right-10")}>
-        <span className="text-2xl font-black text-white">{(current + 1).toString().padStart(2, '0')}</span>
-        <span className="text-xs">/</span>
-        <span className="text-xs">{slides.length.toString().padStart(2, '0')}</span>
+      <div className={cn("absolute bottom-6 z-30 flex items-baseline space-x-2 text-white/40 font-mono", i18n.language === 'ar' ? "left-10 space-x-reverse" : "right-10")}>
+        <span className="text-xl font-black text-white">{(current + 1).toString().padStart(2, '0')}</span>
+        <span className="text-[10px]">/</span>
+        <span className="text-[10px]">{slides.length.toString().padStart(2, '0')}</span>
       </div>
 
       {/* Navigation Dots */}
       {slides.length > 1 && (
-        <div className={cn("absolute bottom-10 flex space-x-2 z-30", i18n.language === 'ar' ? "right-10 space-x-reverse" : "left-10")}>
+        <div className={cn("absolute bottom-6 flex space-x-2 z-30", i18n.language === 'ar' ? "right-10 space-x-reverse" : "left-10")}>
           {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrent(i)}
               className={cn(
                 "h-1 transition-all duration-500",
-                current === i ? "bg-secondary w-12" : "bg-white/20 w-6 hover:bg-white/40"
+                current === i ? "bg-secondary w-8" : "bg-white/20 w-4 hover:bg-white/40"
               )}
             />
           ))}

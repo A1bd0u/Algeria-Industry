@@ -1,19 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { 
-  ArrowLeft, Calendar, Building2, FileText, 
-  Clock, Globe, Lock, ShieldCheck, 
-  CheckCircle2, Download, Send, AlertCircle,
-  MessageSquare, User, Info, FileStack
+import {
+  AlertCircle,
+  ArrowLeft,
+  Building2,
+  Calendar,
+  CheckCircle2, Download,
+  FileStack,
+  FileText,
+  Globe,
+  Info,
+  Lock,
+  MessageSquare,
+  Send,
+  ShieldCheck,
+  User
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { TenderDetailSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const TenderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [isResponding, setIsResponding] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -70,14 +81,7 @@ const TenderDetail = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-neutral-bg flex items-center justify-center p-4">
-         <div className="animate-pulse flex flex-col items-center">
-            <div className="h-12 w-12 bg-gray-200 rounded-full mb-4"></div>
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Chargement...</p>
-         </div>
-      </div>
-    );
+    return <TenderDetailSkeleton />;
   }
 
   if (error || !tender) {
@@ -234,7 +238,7 @@ const TenderDetail = () => {
                               <p className="text-[8px] font-bold text-gray-400 uppercase">{doc.size}</p>
                            </div>
                         </div>
-                        <button className="p-2 text-gray-400 group-hover:text-white hover:text-secondary transition-colors">
+                        <button className="p-2 text-gray-400 hover:text-secondary transition-colors focus:outline-none" onClick={(e) => { e.preventDefault(); e.currentTarget.classList.toggle('text-secondary'); e.currentTarget.classList.toggle('text-gray-400'); }}>
                            <Download className="h-4 w-4" />
                         </button>
                       </div>
@@ -319,7 +323,7 @@ const TenderDetail = () => {
                   <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8">
                     Nos experts métiers vous accompagnent dans la rédaction de votre offre technique.
                   </p>
-                  <button className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] hover:text-white transition-colors">
+                  <button className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['Cahier des charges'], {type: 'application/pdf'})); a.download = 'cahier_des_charges.pdf'; a.click(); }}>
                     Contacter un conseiller →
                   </button>
                </div>

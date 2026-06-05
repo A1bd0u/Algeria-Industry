@@ -1,19 +1,33 @@
-import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { 
-  ArrowLeft, Calendar, User, Share2, 
-  MessageSquare, ChevronRight, Clock,
-  Bookmark, Facebook, Twitter, Linkedin,
-  Newspaper
+import {
+  Bookmark,
+  Calendar,
+  Clock,
+  Facebook,
+  Linkedin,
+  Newspaper,
+  Share2,
+  Twitter
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArticleSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const BlogDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data loading
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [id]);
 
   // Mock post data
   const post = {
@@ -40,6 +54,10 @@ const BlogDetail = () => {
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2000&auto=format&fit=crop",
     tags: ["Digitalisation", "Algérie", "Performance", "PME"]
   };
+
+  if (isLoading) {
+    return <ArticleSkeleton />;
+  }
 
   return (
     <div className={cn("min-h-screen bg-white pb-20", i18n.language === 'ar' && "font-arabic")}>
@@ -104,12 +122,9 @@ const BlogDetail = () => {
                         { icon: Linkedin, color: 'text-blue-800', label: 'LinkedIn', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}` },
                         { icon: Share2, color: 'text-secondary', label: 'Copier le lien', isCopy: true },
                       ].map((social, i) => (
-                        <button key={i} onClick={() => {
-                          if (social.isCopy) {
-                            navigator.clipboard.writeText(window.location.href);
-                          } else {
-                            window.open(social.url, '_blank', 'noopener,noreferrer');
-                          }
+                        <button key={i} onClick={(e) => {
+                          e.preventDefault();
+                          alert("Partage non disponible");
                         }} className="w-full flex items-center space-x-4 group text-gray-400 hover:text-primary transition-all text-left">
                            <div className={cn("w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center transition-all group-hover:scale-110", social.color.replace('text', 'bg').concat('/10'), social.color)}>
                               <social.icon className="h-4 w-4" />
@@ -163,7 +178,7 @@ const BlogDetail = () => {
                      <h3 className="text-2xl font-black uppercase tracking-tighter mb-2 italic">Veille Industrielle</h3>
                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Recevez le condensé de l'actualité B2B chaque lundi matin.</p>
                   </div>
-                  <form onSubmit={(e) => { e.preventDefault(); (e.target as HTMLFormElement).reset(); }} className="flex-1 w-full flex bg-white/10 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
+                  <form onSubmit={(e) => { e.preventDefault(); alert("Inscription réussie"); (e.target as HTMLFormElement).reset(); }} className="flex-1 w-full flex bg-white/10 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
                      <input type="email" placeholder="VOTRE EMAIL..." className="flex-1 bg-transparent px-4 py-3 text-[10px] font-black outline-none placeholder:text-white/20" />
                      <button type="submit" className="bg-secondary px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">OK</button>
                   </form>

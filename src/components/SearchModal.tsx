@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Package, Building2, FileText, ArrowRight, TrendingUp } from 'lucide-react';
+import { ArrowRight, Building2, FileText, Package, Search, TrendingUp, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
 
 interface SearchResult {
   id: string;

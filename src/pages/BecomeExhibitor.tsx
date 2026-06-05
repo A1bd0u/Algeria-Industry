@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { 
-  CheckCircle2, Star, Zap, Users, Monitor, Globe, 
-  BarChart3, MessageSquare, ArrowRight, ShieldCheck, 
-  Layers, Megaphone, Target, Award
+import {
+  ArrowRight,
+  Award,
+  BarChart3,
+  CheckCircle2,
+  Globe,
+  Layers, Megaphone,
+  MessageSquare,
+  ShieldCheck,
+  Star,
+  Target,
+  Users,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const BecomeExhibitor = () => {
-  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium' | 'enterprise'>('premium');
-
   const benefits = [
     { 
       icon: Users, 
@@ -132,7 +139,7 @@ const BecomeExhibitor = () => {
               >
                 Réserver mon stand
               </button>
-              <button className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/20 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all">
+              <button className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/20 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 Voir la démo 3D
               </button>
             </div>
@@ -281,7 +288,7 @@ const BecomeExhibitor = () => {
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Mise en ligne en moins de 24h</p>
             </div>
           </div>
-          <button className="w-full mt-12 btn-secondary py-5 rounded-3xl font-black uppercase tracking-[0.2em] flex items-center justify-center space-x-4">
+          <button className="w-full mt-12 btn-secondary py-5 rounded-3xl font-black uppercase tracking-[0.2em] flex items-center justify-center space-x-4" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
             <span>Démarrer mon inscription</span>
             <ArrowRight className="h-6 w-6" />
           </button>

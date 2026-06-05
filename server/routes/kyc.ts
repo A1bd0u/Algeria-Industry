@@ -9,7 +9,6 @@ router.get('/', requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const supabase = getSupabase();
     
-    // In a real app we would have a kyc_applications table, or check companies with status='pending'
     const { data: kycs, error } = await supabase
       .from('kyc_requests')
       .select('*')
@@ -18,11 +17,96 @@ router.get('/', requireAuth, requireRole(['admin']), async (req, res) => {
     if (error) {
        throw error;
     }
+
+    const kycsWithDocs = await Promise.all((kycs || []).map(async (kyc) => {
+       let docs = [];
+       if (kyc.company_id) {
+           const { data: docData } = await supabase.from('kyc_documents').select('document_type, file_url').eq('company_id', kyc.company_id);
+           docs = docData || [];
+       }
+       return {
+           ...kyc,
+           docsList: docs,
+       };
+    }));
     
-    return res.json(kycs || []);
+    return res.json(kycsWithDocs);
   } catch(e: any) {
     console.error("Supabase Error GET /kyc:", e);
     return res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/kyc/submit - Submit KYC documents
+router.post('/submit', requireAuth, async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    const user = (req as any).user;
+    const { activity, files } = req.body;
+
+    if (!activity || !files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ error: 'Données manquantes (activité ou fichiers)' });
+    }
+
+    // Récupérer le user et sa company
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('company_id, company')
+      .eq('id', user.id)
+      .single();
+
+    if (userError || !userData?.company_id) {
+      console.error('Kyc Submit Error: userError:', userError, 'userData:', userData, 'user.id:', user.id);
+      return res.status(404).json({ error: 'Entreprise non trouvée pour cet utilisateur' });
+    }
+
+    const companyId = userData.company_id;
+    const companyName = userData.company;
+
+    // Créer la demande KYC
+    const docsType = files.map(f => f.type.toUpperCase());
+    const { data: kycRequest, error: reqError } = await supabase
+      .from('kyc_requests')
+      .insert([{
+        company_id: companyId,
+        user_id: user.id,
+        name: companyName,
+        activity: activity,
+        status: 'pending',
+        date: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (reqError) {
+      console.error(reqError);
+      return res.status(500).json({ error: 'Erreur lors de la création de la demande KYC' });
+    }
+
+    // Insérer les documents dans kyc_documents
+    const docInserts = files.map(f => ({
+      company_id: companyId,
+      document_type: f.type.toUpperCase(),
+      file_url: f.url,
+      status: 'pending'
+    }));
+
+    const { error: docError } = await supabase
+      .from('kyc_documents')
+      .insert(docInserts);
+
+    if (docError) {
+      console.error(docError);
+      return res.status(500).json({ error: 'Erreur lors de l\'association des documents' });
+    }
+    
+    // Mettre à jour la company en pending
+    await supabase.from('companies').update({ status: 'pending' }).eq('id', companyId);
+
+    return res.json({ success: true, message: 'Votre demande KYC a bien été soumise.' });
+  } catch (e: any) {
+    console.error("Supabase Error POST /kyc/submit:", e);
+    return res.status(500).json({ error: 'Une erreur interne s\'est produite', details: e.message });
   }
 });
 
@@ -42,9 +126,16 @@ router.post('/:id/approve', requireAuth, requireRole(['admin']), async (req, res
       
     if (error) throw error;
 
-    // update user isVerified status
     if (kycData?.user_id) {
+       // update user isVerified status
        await supabase.from('users').update({ isVerified: true }).eq('id', kycData.user_id);
+       
+       // get company id
+       const { data: userData } = await supabase.from('users').select('company_id').eq('id', kycData.user_id).single();
+       if (userData?.company_id) {
+          await supabase.from('companies').update({ status: 'approved' }).eq('id', userData.company_id);
+          await supabase.from('kyc_documents').update({ status: 'approved' }).eq('company_id', userData.company_id);
+       }
     }
 
     return res.json({ success: true });
@@ -60,12 +151,23 @@ router.post('/:id/reject', requireAuth, requireRole(['admin']), async (req, res)
   try {
     const supabase = getSupabase();
     
-    const { error } = await supabase
+    const { data: kycData, error } = await supabase
       .from('kyc_requests')
       .update({ status: 'rejected' })
-      .eq('id', id);
+      .eq('id', id)
+      .select('user_id')
+      .single();
       
     if (error) throw error;
+    
+    // update company status and documents
+    if (kycData?.user_id) {
+       const { data: userData } = await supabase.from('users').select('company_id').eq('id', kycData.user_id).single();
+       if (userData?.company_id) {
+          await supabase.from('companies').update({ status: 'rejected' }).eq('id', userData.company_id);
+          await supabase.from('kyc_documents').update({ status: 'rejected' }).eq('company_id', userData.company_id);
+       }
+    }
     return res.json({ success: true });
   } catch (err: any) {
     console.error("Supabase Error POST /kyc/:id/reject:", err);

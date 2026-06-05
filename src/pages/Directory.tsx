@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, MapPin, Award, Building2, ExternalLink, ChevronRight, Map as MapIcon, List } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { Award, Building2, ChevronRight, ExternalLink, Filter, List, Map as MapIcon, MapPin, Search } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 // No mock data needed anymore, using API
 
@@ -221,7 +221,7 @@ const Directory = () => {
                 <span className="tech-label">{t('directory.zones')}</span>
                 <div className={cn("flex flex-wrap gap-2 mt-4", i18n.language === 'ar' && "justify-end")}>
                   {["Rouiba", "Hassi Messaoud", "Arzew", "Chelghoum Laid"].map(zone => (
-                    <button key={zone} className="px-3 py-1 bg-gray-50 border border-gray-100 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:border-secondary hover:text-secondary transition-all">
+                    <button key={zone} className="px-3 py-1 bg-gray-50 border border-gray-100 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:border-secondary hover:text-secondary transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                       {zone}
                     </button>
                   ))}
@@ -332,7 +332,7 @@ const Directory = () => {
                                 </div>
                               </div>
                             </div>
-                            <button className="text-gray-300 hover:text-secondary transition-colors">
+                            <button className="text-gray-300 hover:text-secondary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                               <ExternalLink className="h-5 w-5" />
                             </button>
                           </div>

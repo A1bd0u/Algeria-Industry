@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Newspaper, Calendar, User, Clock, 
-  ChevronRight, Search, Tag, Share2, 
-  ArrowRight, TrendingUp, Bookmark, Loader2, AlertCircle
+import {
+  AlertCircle,
+  ArrowRight,
+  Calendar,
+  Clock,
+  Share2,
+  TrendingUp,
+  User
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
-import PageTransition from '../components/PageTransition';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import PageTransition from '../components/PageTransition';
+import { BlogCardSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const Blog = () => {
   const { t, i18n } = useTranslation();
@@ -88,9 +93,8 @@ const Blog = () => {
 
           {/* Blog Content */}
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center">
-               <Loader2 className="h-10 w-10 text-secondary animate-spin mb-4" />
-               <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{t('common.loading') || 'Chargement...'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map(i => <BlogCardSkeleton key={i} />)}
             </div>
           ) : error ? (
             <div className="py-20 flex flex-col items-center justify-center">
@@ -202,7 +206,7 @@ const Blog = () => {
                       </div>
                       <span className="text-xs font-bold text-gray-600">{post.author}</span>
                     </div>
-                    <button className="text-primary hover:text-secondary transition-colors">
+                    <button className="text-primary hover:text-secondary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                       <Share2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -231,7 +235,7 @@ const Blog = () => {
                   className={cn("flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 outline-none focus:bg-white/20 transition-all", i18n.language === 'ar' && "text-right")}
                   required
                 />
-                <button className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-black/20">
+                <button className="bg-secondary text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-black/20" onClick={(e) => { e.preventDefault(); window.scrollTo(0,0); }}>
                   {t('blog.subscribe')}
                 </button>
               </form>

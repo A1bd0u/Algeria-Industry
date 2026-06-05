@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Download, Search, Filter, ExternalLink, Package, Building2, Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle, Building2, Download, ExternalLink, FileText } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from '../lib/utils';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CatalogueSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const Catalogues = () => {
   const { t, i18n } = useTranslation();
@@ -86,9 +87,8 @@ const Catalogues = () => {
 
         {/* Catalogues Grid */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center">
-             <Loader2 className="h-10 w-10 text-secondary animate-spin mb-4" />
-             <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{t('common.loading') || 'Chargement...'}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+             {[1, 2, 3, 4, 5, 6].map(i => <CatalogueSkeleton key={i} />)}
           </div>
         ) : error ? (
           <div className="py-20 flex flex-col items-center justify-center">
@@ -114,7 +114,7 @@ const Catalogues = () => {
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-primary/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button className="bg-secondary text-white p-4 rounded-full shadow-xl hover:scale-110 transition-transform">
+                      <button className="bg-secondary text-white p-4 rounded-full shadow-xl hover:scale-110 transition-transform" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                         <Download className="h-6 w-6" />
                       </button>
                     </div>
@@ -150,11 +150,11 @@ const Catalogues = () => {
                     </div>
 
                     <div className={cn("mt-6 flex items-center justify-between", i18n.language === 'ar' && "flex-row-reverse")}>
-                      <button className={cn("flex items-center space-x-2 text-[10px] font-black text-primary uppercase tracking-widest hover:text-secondary transition-colors", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
+                      <button className={cn("flex items-center space-x-2 text-[10px] font-black text-primary uppercase tracking-widest hover:text-secondary transition-colors", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")} onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                         <ExternalLink className="h-4 w-4" />
                         <span>{t('catalogues.view')}</span>
                       </button>
-                      <button className={cn("flex items-center space-x-2 text-[10px] font-black text-secondary uppercase tracking-widest hover:underline", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
+                      <button className={cn("flex items-center space-x-2 text-[10px] font-black text-secondary uppercase tracking-widest hover:underline", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")} onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                         <Download className="h-4 w-4" />
                         <span>{t('catalogues.download')}</span>
                       </button>

@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Globe, Layout, Maximize2, Users, 
-  MessageSquare, Video, Info, ArrowRight,
-  ShieldCheck, Zap, Award, Search, Radio
+import {
+  ArrowRight,
+  Globe,
+  Info,
+  Layout, Maximize2,
+  MessageSquare,
+  Radio,
+  Search,
+  ShieldCheck,
+  Users,
+  Video,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../lib/utils';
 
 const VirtualShow = () => {
   const { i18n } = useTranslation();
@@ -50,7 +57,7 @@ const VirtualShow = () => {
                 <p className="text-lg font-black tracking-tighter">1,248 Industriels</p>
               </div>
             </div>
-            <button className="bg-secondary px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-secondary/20">
+            <button className="bg-secondary px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-secondary/20" onClick={(e) => { e.preventDefault(); window.scrollTo({top: window.innerHeight, behavior: 'smooth'}); }}>
               Pass VIP Exposant
             </button>
           </div>
@@ -100,7 +107,7 @@ const VirtualShow = () => {
                 { icon: Info, label: 'Guide Salon' },
                 { icon: Video, label: 'Conférences' },
               ].map((item, i) => (
-                <button key={i} className="bg-white/5 hover:bg-white/10 border border-white/10 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all group">
+                <button key={i} className="bg-white/5 hover:bg-white/10 border border-white/10 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all group" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                   <item.icon className="h-5 w-5 text-secondary group-hover:scale-110 transition-transform" />
                   <span className="text-[9px] font-black uppercase tracking-widest text-white/40 group-hover:text-white">{item.label}</span>
                 </button>
@@ -125,7 +132,7 @@ const VirtualShow = () => {
                     <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Localisation Actuelle</p>
                     <p className="text-xl font-black uppercase tracking-tighter">{activeZone === 'main' ? 'Atrium Central' : `Secteur ${activeZone.toUpperCase()}`}</p>
                   </div>
-                  <button className="pointer-events-auto bg-white/10 hover:bg-white/20 p-4 rounded-xl backdrop-blur-md border border-white/10 transition-all">
+                  <button className="pointer-events-auto bg-white/10 hover:bg-white/20 p-4 rounded-xl backdrop-blur-md border border-white/10 transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                     <Maximize2 className="h-5 w-5" />
                   </button>
                 </div>
@@ -179,7 +186,7 @@ const VirtualShow = () => {
                     </div>
                   </div>
                   <h4 className="text-sm font-black uppercase tracking-tight mb-4">{ex.name}</h4>
-                  <button className="text-[9px] font-black text-white/40 uppercase tracking-widest flex items-center space-x-2 group">
+                  <button className="text-[9px] font-black text-white/40 uppercase tracking-widest flex items-center space-x-2 group" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                     <span>Visiter ce stand</span>
                     <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                   </button>

@@ -1,11 +1,10 @@
-import React from 'react';
-import { ShieldCheck, Gavel, Scale, FileText, AlertCircle, Building2 } from 'lucide-react';
+import { AlertCircle, Building2, FileText, Gavel, Scale, ShieldCheck } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
-import { motion } from 'motion/react';
 
 const Terms = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   return (
     <div className={cn("bg-neutral-bg min-h-screen pb-20", i18n.language === 'ar' && "font-arabic")}>

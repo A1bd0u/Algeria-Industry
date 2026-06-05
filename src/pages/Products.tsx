@@ -1,15 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Search, Filter, SlidersHorizontal, Grid, List as ListIcon, 
-  ChevronDown, ArrowRight, Zap, ShieldCheck, Star, 
-  Settings, Wrench, Package, Truck, Loader2, AlertCircle
+import {
+  AlertCircle,
+  ArrowRight,
+  ChevronDown,
+  Grid, List as ListIcon,
+  Package,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Star,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ProductSkeleton } from '../components/Skeleton';
+import { cn } from '../lib/utils';
 
 const Products = () => {
+  const [activePage, setActivePage] = React.useState(1);
+  const [showAddModal, setShowAddModal] = React.useState(false);
   const { i18n } = useTranslation();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [activeCategory, setActiveCategory] = useState('Tous');
@@ -79,6 +89,22 @@ const Products = () => {
   });
 
   return (
+    <React.Fragment>
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative">
+              <button onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-primary">✕</button>
+              <h3 className="text-2xl font-black uppercase text-primary mb-2">Ajouter un produit</h3>
+              <p className="text-sm text-gray-500 mb-6">Veuillez renseigner les informations de base pour votre nouveau produit.</p>
+              <form onSubmit={(e) => { e.preventDefault(); setShowAddModal(false); alert("Le produit a été ajouté au catalogue en attente de modération."); }}>
+                 <input type="text" placeholder="Nom du produit" required className="w-full mb-4 p-4 border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
+                 <textarea placeholder="Description" rows={3} required className="w-full mb-4 p-4 border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"></textarea>
+                 <button type="submit" className="w-full py-4 bg-primary text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-secondary transition-all">Enregistrer</button>
+              </form>
+           </div>
+        </div>
+      )}
+  
     <div className={cn("min-h-screen bg-neutral-bg pt-32 pb-20", i18n.language === 'ar' && "font-arabic")}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
@@ -177,9 +203,7 @@ const Products = () => {
               <Zap className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10" />
               <h4 className="text-xl font-black mb-4 leading-tight uppercase">Vendez vos Machines</h4>
               <p className="text-white/60 text-[10px] font-medium mb-6 uppercase tracking-widest">Rejoignez 500+ fournisseurs en Algérie</p>
-              <Link to="/contact" className="w-full py-4 bg-secondary rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all text-center block">
-                Ajouter un produit
-              </Link>
+              <button onClick={() => setShowAddModal(true)} className="w-full py-4 bg-secondary rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all text-center block text-white">Ajouter un produit</button>
             </div>
           </aside>
 
@@ -194,14 +218,19 @@ const Products = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent px-4 py-3 text-sm font-medium focus:outline-none"
               />
-              <button className="px-6 py-3 bg-gray-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-gray-100">
+              <button className="px-6 py-3 bg-gray-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-gray-100" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 Rechercher
               </button>
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center items-center py-20">
-                 <Loader2 className="h-10 w-10 text-secondary animate-spin" />
+              <div className={cn(
+                "grid gap-6",
+                view === 'grid' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+              )}>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <ProductSkeleton key={i} view={view} />
+                ))}
               </div>
             ) : error ? (
               <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold flex items-center mb-8">
@@ -248,7 +277,7 @@ const Products = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-black text-secondary tracking-[0.2em] uppercase">{product.brand}</span>
-                        <button className="text-gray-300 hover:text-secondary transition-colors">
+                        <button className="text-gray-300 hover:text-secondary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                           <Star className="h-4 w-4" />
                         </button>
                       </div>
@@ -288,11 +317,20 @@ const Products = () => {
 
             {/* Pagination Placeholder */}
             <div className="mt-12 flex items-center justify-center space-x-2">
-              <button className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all">1</button>
-              <button className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-xs font-bold text-white shadow-lg">2</button>
-              <button className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all">3</button>
+              {[1, 2, 3].map(page => (
+                 <button 
+                   key={page}
+                   onClick={() => setActivePage(page)}
+                   className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${activePage === page ? 'bg-primary text-white shadow-lg' : 'border border-gray-100 text-gray-400 hover:border-primary hover:text-primary'}`}
+                 >
+                   {page}
+                 </button>
+              ))}
               <span className="px-2 text-gray-300">...</span>
-              <button className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all">
+              <button 
+                onClick={() => setActivePage(prev => prev + 1)}
+                className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all"
+              >
                 <ChevronDown className="h-4 w-4 -rotate-90" />
               </button>
             </div>
@@ -300,6 +338,7 @@ const Products = () => {
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 };
 

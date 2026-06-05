@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { ChevronUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { cn } from '../lib/utils';
 
 const BackToTop = () => {

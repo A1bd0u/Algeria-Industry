@@ -1,9 +1,9 @@
+import { ArrowRight, Briefcase, Building2, CheckCircle2, Loader2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { motion } from 'motion/react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Building2, Mail, Lock, ArrowRight, CheckCircle2, ShieldCheck, Briefcase, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { cn } from '../lib/utils';
 
 const Register = () => {
   const [role, setRole] = useState<'acheteur' | 'fournisseur' | null>(null);

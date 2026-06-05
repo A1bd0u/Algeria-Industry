@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Calendar, MapPin, Video, Users, 
-  Search, Filter, ChevronRight, Clock, 
-  Ticket, ExternalLink, Info, Bell, Loader2, AlertCircle
+import {
+  AlertCircle,
+  Bell,
+  Calendar,
+  ChevronRight, Clock,
+  ExternalLink,
+  Filter,
+  MapPin,
+  Ticket
 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import PageTransition from '../components/PageTransition';
+import { cn } from '../lib/utils';
+
+import { EventSkeleton } from '../components/Skeleton';
 
 const Events = () => {
   const [activeType, setActiveType] = useState('Tous');
@@ -78,11 +85,11 @@ const Events = () => {
               ))}
             </div>
             <div className="flex items-center space-x-4">
-              <button className="flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
+              <button className="flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 <Filter className="h-4 w-4" />
                 <span>Plus de filtres</span>
               </button>
-              <button className="flex items-center space-x-2 text-sm font-bold text-secondary hover:underline">
+              <button className="flex items-center space-x-2 text-sm font-bold text-secondary hover:underline" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 <Calendar className="h-4 w-4" />
                 <span>Vue calendrier</span>
               </button>
@@ -91,9 +98,8 @@ const Events = () => {
 
           {/* Events Grid */}
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center">
-               <Loader2 className="h-10 w-10 text-secondary animate-spin mb-4" />
-               <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Chargement...</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               {[1, 2, 3, 4].map(i => <EventSkeleton key={i} />)}
             </div>
           ) : error ? (
             <div className="py-20 flex flex-col items-center justify-center">
@@ -158,11 +164,11 @@ const Events = () => {
                     </div>
                   </div>
                   <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
-                    <button className="text-primary font-bold text-sm flex items-center space-x-1 hover:translate-x-1 transition-transform">
+                    <button className="text-primary font-bold text-sm flex items-center space-x-1 hover:translate-x-1 transition-transform" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                       <span>Détails</span>
                       <ChevronRight className="h-4 w-4" />
                     </button>
-                    <button className="btn-primary py-2 px-6 rounded-xl text-xs">
+                    <button className="btn-primary py-2 px-6 rounded-xl text-xs" onClick={(e) => { e.preventDefault(); alert("Inscription confirmée et ajoutée à votre calendrier !"); }}>
                       S'inscrire
                     </button>
                   </div>
@@ -181,7 +187,7 @@ const Events = () => {
             <p className="text-gray-500 max-w-xl mx-auto mb-8">
               Faites connaître votre salon, conférence ou webinaire à toute la communauté Algeria Industry.
             </p>
-            <button className="bg-white border border-primary text-primary px-8 py-4 rounded-2xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2 mx-auto">
+            <button className="bg-white border border-primary text-primary px-8 py-4 rounded-2xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2 mx-auto" onClick={(e) => { e.preventDefault(); alert("Redirection vers la billetterie..."); }}>
               <span>Soumettre un événement</span>
               <ExternalLink className="h-5 w-5" />
             </button>
@@ -198,7 +204,7 @@ const Events = () => {
                 <p className="text-sm text-gray-400">Recevez une notification 24h avant chaque événement qui vous intéresse.</p>
               </div>
             </div>
-            <button className="text-secondary font-bold text-sm hover:underline">
+            <button className="text-secondary font-bold text-sm hover:underline" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
               Activer les notifications
             </button>
           </section>

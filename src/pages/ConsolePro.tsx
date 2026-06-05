@@ -1,45 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Building2, Package, 
-  ShieldCheck, AlertTriangle, Settings, BarChart3,
-  Search, Filter, ChevronRight, CheckCircle, XCircle,
-  Clock, TrendingUp, ArrowUpRight, Activity, Bell,
-  FileText, Megaphone, Globe, PackagePlus, MessageSquare,
-  Eye, MousePointer2, Download, Plus, Edit2, Trash2,
-  Lock, Mail, Phone, ExternalLink, MoreVertical,
-  Check, X, CreditCard, Video, Info, Zap, Send, Newspaper, LayoutList,
-  MousePointer, History, Smartphone, Monitor, Trash
+import {
+  Activity,
+  AlertTriangle,
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  Building2,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Edit2,
+  Eye,
+  FileText,
+  Filter,
+  Globe,
+  History,
+  LayoutDashboard,
+  LayoutList,
+  Lock,
+  MessageSquare,
+  Monitor,
+  MoreVertical,
+  MousePointer,
+  Newspaper,
+  PackagePlus,
+  Plus,
+  Settings,
+  ShieldCheck,
+  Trash,
+  Trash2,
+  TrendingUp,
+  Users,
+  X,
+  Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../lib/utils';
-import { useTracking } from '../context/TrackingContext';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, LineChart, Line,
-  BarChart, Bar
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis
 } from 'recharts';
+import { useTracking } from '../context/TrackingContext';
+import { cn } from '../lib/utils';
 
-const dataGrowth = [
-  { name: 'Jan', users: 1200, companies: 400 },
-  { name: 'Fév', users: 1900, companies: 450 },
-  { name: 'Mar', users: 2400, companies: 600 },
-  { name: 'Avr', users: 3100, companies: 800 },
-  { name: 'Mai', users: 4800, companies: 1100 },
-  { name: 'Juin', users: 6200, companies: 1400 },
-];
 
-const analyticsData = [
-  { name: 'Lun', vues: 400, clics: 24 },
-  { name: 'Mar', vues: 300, clics: 13 },
-  { name: 'Mer', vues: 600, clics: 98 },
-  { name: 'Jeu', vues: 800, clics: 39 },
-  { name: 'Ven', vues: 500, clics: 48 },
-  { name: 'Sam', vues: 200, clics: 10 },
-  { name: 'Dim', vues: 300, clics: 15 },
-];
 
 const ConsolePro = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const { profile, visits, events, totalTimeSpentSec, clearLogs } = useTracking();
   const [activeTab, setActiveTab] = useState('gov-overview');
   const [chartTimeframe, setChartTimeframe] = useState<'6m' | '1y'>('6m');
@@ -107,13 +123,7 @@ const ConsolePro = () => {
     { period: 'Juin', revenue: 2400000 },
   ];
 
-  const sectorDistribution = [
-    { name: 'Énergie', value: 35, color: '#1B4D2E' },
-    { name: 'Construction', value: 25, color: '#F59E0B' },
-    { name: 'Mécanique', value: 20, color: '#0EA5E9' },
-    { name: 'Textile', value: 10, color: '#8B5CF6' },
-    { name: 'Autres', value: 10, color: '#9CA3AF' },
-  ];
+
 
   const renderContent = () => {
     switch(activeTab) {
@@ -563,19 +573,21 @@ const ConsolePro = () => {
                      >
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform"><Building2 className="h-20 w-20" /></div>
                         <div className="relative z-10 font-sans">
-                           <span className="text-[9px] font-black text-secondary uppercase tracking-[0.2em] mb-2 block">{c.activity}</span>
-                           <h4 className="text-xl font-black text-primary uppercase tracking-tighter mb-1">{c.name}</h4>
-                           <p className="text-[10px] font-bold text-gray-400 uppercase mb-8">Soumis le {c.date}</p>
+                           <span className="text-[9px] font-black text-secondary uppercase tracking-[0.2em] mb-2 block">{c.activity || 'ACTIVITÉ NON SPÉCIFIÉE'}</span>
+                           <h4 className="text-xl font-black text-primary uppercase tracking-tighter mb-1">{c.name || c.company_name || 'ENTREPRISE'}</h4>
+                           <p className="text-[10px] font-bold text-gray-400 uppercase mb-8">Soumis le {c.date || (c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : 'N/A')}</p>
                            
                            <div className="space-y-3 mb-8">
                               <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-2">Documents fournis :</p>
                               <div className="flex flex-wrap gap-2">
-                                 {c.docs.map(d => (
-                                   <div key={d} className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg flex items-center space-x-2 group/doc cursor-pointer hover:bg-white hover:border-secondary transition-all">
+                                 {c.docsList && c.docsList.length > 0 ? c.docsList.map((d: any) => (
+                                   <a key={d.document_type} href={d.file_url} target="_blank" rel="noreferrer" className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg flex items-center space-x-2 group/doc cursor-pointer hover:bg-white hover:border-secondary transition-all">
                                       <FileText className="h-3 w-3 text-secondary group-hover/doc:scale-110" />
-                                      <span className="text-[9px] font-black text-primary uppercase">{d}.PDF</span>
-                                   </div>
-                                 ))}
+                                      <span className="text-[9px] font-black text-primary uppercase">{d.document_type}.PDF</span>
+                                   </a>
+                                 )) : (
+                                   <p className="text-[10px] text-gray-500 italic">Aucun document joint</p>
+                                 )}
                               </div>
                            </div>
     
@@ -617,8 +629,8 @@ const ConsolePro = () => {
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Gérez les demandes d'assistance des exposants et utilisateurs</p>
                   </div>
                   <div className="flex bg-gray-50 p-1 rounded-xl">
-                    <button className="px-4 py-2 bg-white rounded-lg text-[10px] font-black text-primary shadow-sm uppercase tracking-widest">Ouverts (5)</button>
-                    <button className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Fermés</button>
+                    <button className="px-4 py-2 bg-white rounded-lg text-[10px] font-black text-primary shadow-sm uppercase tracking-widest" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>Ouverts (5)</button>
+                    <button className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>Fermés</button>
                   </div>
                </div>
                <div className="p-8 space-y-4">
@@ -640,7 +652,7 @@ const ConsolePro = () => {
                             "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
                             ticket.status === 'Nouveau' ? "bg-secondary text-white shadow-lg shadow-secondary/20" : "bg-primary text-white"
                           )}>{ticket.status}</span>
-                          <button className="p-3 bg-white text-gray-400 rounded-xl hover:text-primary transition-all shadow-sm"><ChevronRight className="h-4 w-4" /></button>
+                          <button className="p-3 bg-white text-gray-400 rounded-xl hover:text-primary transition-all shadow-sm" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}><ChevronRight className="h-4 w-4" /></button>
                        </div>
                     </div>
                   ))}
@@ -694,7 +706,7 @@ const ConsolePro = () => {
                              <span className="px-3 py-1 bg-emerald-50 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest">{u.status}</span>
                           </td>
                           <td className="p-6 text-right">
-                             <button className="p-2 text-gray-400 hover:text-primary"><MoreVertical className="h-4 w-4" /></button>
+                             <button className="p-2 text-gray-400 hover:text-primary" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}><MoreVertical className="h-4 w-4" /></button>
                           </td>
                        </tr>
                      ))}
@@ -728,7 +740,7 @@ const ConsolePro = () => {
                           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{(i+5)*10} Sous-catégories</p>
                        </div>
                     </div>
-                    <button className="p-2 text-gray-300 hover:text-primary transition-all"><ChevronRight className="h-4 w-4" /></button>
+                    <button className="p-2 text-gray-300 hover:text-primary transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}><ChevronRight className="h-4 w-4" /></button>
                  </div>
                ))}
             </div>
@@ -1224,7 +1236,15 @@ const ConsolePro = () => {
         </div>
 
         <div className="p-8 border-t border-white/5 bg-white/[0.02]">
-           <button className="w-full flex items-center justify-center space-x-3 py-4 text-white/40 hover:text-error transition-all text-[11px] font-black uppercase tracking-widest border border-white/5 rounded-2xl bg-white/[0.03] hover:bg-error/10 hover:border-error/20">
+           <button className="w-full flex items-center justify-center space-x-3 py-4 text-white/40 hover:text-error transition-all text-[11px] font-black uppercase tracking-widest border border-white/5 rounded-2xl bg-white/[0.03] hover:bg-error/10 hover:border-error/20" onClick={async (e) => { 
+                e.preventDefault(); 
+                try {
+                  await logout();
+                  navigate('/');
+                } catch (error) {
+                  console.error("Erreur déconnexion:", error);
+                }
+              }}>
               <Globe className="h-4 w-4" />
               <span>DÉCONNEXION</span>
            </button>
@@ -1260,7 +1280,7 @@ const ConsolePro = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2 bg-primary/[0.03] p-1.5 rounded-2xl border border-primary/5">
-                   <button className="relative p-2.5 text-primary/40 hover:text-secondary hover:bg-white rounded-xl transition-all duration-300">
+                   <button className="relative p-2.5 text-primary/40 hover:text-secondary hover:bg-white rounded-xl transition-all duration-300" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                       <Bell className="h-5 w-5" />
                       <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-white" />
                    </button>

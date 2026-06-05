@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Search, ArrowRight, Building2, Package, FileText, CheckCircle2, Users, ChevronDown, Activity, ArrowUpRight, Plus } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, Building2, CheckCircle2, FileText, Plus, Users } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
-import { useCurrency } from '../context/CurrencyContext';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { Skeleton, TenderSkeleton } from '../components/Skeleton';
+import { useCurrency } from '../context/CurrencyContext';
 import { cn } from '../lib/utils';
-import AdSpace from '../components/AdSpace';
 
 const PARTNERS = [
   { name: "Sonatrach", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Sonatrach_Logo.svg/1200px-Sonatrach_Logo.svg.png" },
@@ -22,9 +22,11 @@ const Home = () => {
   const [visibleProducts, setVisibleProducts] = useState(4);
   const [products, setProducts] = useState<any[]>([]);
   const [tenders, setTenders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchHomeData = async () => {
+      setIsLoading(true);
       try {
         const [prodRes, tendRes] = await Promise.all([
           fetch('/api/products').catch(() => null),
@@ -55,6 +57,8 @@ const Home = () => {
         setTenders(tData.slice(0, 3));
       } catch (e) {
         console.error("Home fetch error", e);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchHomeData();
@@ -150,7 +154,9 @@ const Home = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {tenders.length === 0 ? (
+              {isLoading ? (
+                [1, 2, 3].map(i => <TenderSkeleton key={i} />)
+              ) : tenders.length === 0 ? (
                 <div className="bg-gray-50 p-8 text-center text-gray-400 font-medium text-sm rounded-[24px]">
                   Aucun appel d'offres pour le moment.
                 </div>
@@ -183,7 +189,7 @@ const Home = () => {
                     )}>
                       {tender.status || 'Ouvert'}
                     </span>
-                    <button className="p-2 bg-white text-gray-400 group-hover:bg-primary group-hover:text-white transition-all rounded-xl border border-gray-100 flex items-center justify-center">
+                    <button className="p-2 bg-white text-gray-400 group-hover:bg-primary group-hover:text-white transition-all rounded-xl border border-gray-100 flex items-center justify-center" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                       <ArrowUpRight className="h-5 w-5" />
                     </button>
                   </div>
@@ -229,7 +235,28 @@ const Home = () => {
           </div>
 
           <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-border-tech", i18n.language === 'ar' && "border-l-0 border-r")}>
-            {products.length === 0 ? (
+            {isLoading ? (
+              [1, 2, 3, 4].map(i => (
+                <div key={i} className="bg-white border-r border-b border-border-tech p-6 relative">
+                  <div className="aspect-[4/3] mb-6 bg-neutral-bg border border-border-tech p-4 flex items-center justify-center">
+                    <Skeleton className="w-2/3 h-2/3 opacity-20" />
+                  </div>
+                  <div className={cn("space-y-4", i18n.language === 'ar' && "text-right flex flex-col items-end")}>
+                    <div className="space-y-2 w-full">
+                      <Skeleton className={cn("h-3 w-1/3", i18n.language === 'ar' && "ml-auto")} />
+                      <Skeleton className={cn("h-5 w-3/4", i18n.language === 'ar' && "ml-auto")} />
+                    </div>
+                    <div className={cn("flex justify-between items-center w-full pt-4 border-t border-border-tech", i18n.language === 'ar' && "flex-row-reverse")}>
+                      <div className={cn("space-y-1 mt-2 flex flex-col", i18n.language === 'ar' && "items-end")}>
+                        <Skeleton className="h-2 w-10" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                      <Skeleton className="h-8 w-8" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : products.length === 0 ? (
               <div className="col-span-full py-12 text-center text-gray-500 font-medium">
                 Aucun produit publié pour le moment.
               </div>

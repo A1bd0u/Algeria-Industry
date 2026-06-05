@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { ChevronDown, ChevronUp, Columns, GitCompare, X, Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { useComparison } from '../context/ComparisonContext';
-import { X, GitCompare, ChevronUp, ChevronDown, Check, Columns, Zap } from 'lucide-react';
-import { cn } from '../lib/utils';
 
 const ComparisonBar = () => {
   const { comparedProducts, removeFromCompare, clearCompare } = useComparison();
@@ -81,10 +80,10 @@ const ComparisonBar = () => {
               >
                 Vider la liste
               </button>
-              <button className="btn-primary px-8 py-3 rounded-2xl flex items-center space-x-3 group">
+              <Link to="/compare" className="btn-primary px-8 py-3 rounded-2xl flex items-center space-x-3 group">
                 <span className="text-xs font-black uppercase tracking-widest">Demander un devis comparatif</span>
                 <ChevronUp className="h-4 w-4 group-hover:-translate-y-1 transition-transform" />
-              </button>
+              </Link>
             </div>
           </motion.div>
         ) : (

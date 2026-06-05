@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, FileText, Calendar, Building2, Clock, CheckCircle2, ChevronRight, Plus, Lock, Globe, AlertCircle, Send, Package, Users, Mail, Phone, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
+import { AlertCircle, ArrowLeft, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Globe, Lock, Package, Plus, Search, Send, ShieldCheck } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 import AdSpace from '../components/AdSpace';
+import { TenderSkeleton } from '../components/Skeleton';
 
 interface Tender {
   id: string;
@@ -239,8 +240,8 @@ const Tenders = () => {
               {/* Main List */}
               <div className="lg:col-span-2 space-y-4">
                 {isLoading ? (
-                  <div className="flex justify-center items-center py-20">
-                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => <TenderSkeleton key={i} />)}
                   </div>
                 ) : error ? (
                   <div className="bg-red-50 text-red-500 p-8 border border-red-100 font-bold">
@@ -340,9 +341,7 @@ const Tenders = () => {
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-8 relative z-10 leading-relaxed">
                     Accédez aux appels d'offres privés et recevez des alertes personnalisées dès qu'une opportunité correspond à votre secteur.
                   </p>
-                  <Link to="/subscriptions" className="w-full bg-white text-primary font-black py-4 text-[10px] uppercase tracking-widest hover:bg-secondary hover:text-white transition-all relative z-10 flex items-center justify-center">
-                    Devenir Premium
-                  </Link>
+                  <Link to="/subscriptions" className="w-full bg-white text-primary font-black py-4 text-[10px] uppercase tracking-widest hover:bg-secondary hover:text-white transition-all relative z-10 flex items-center justify-center">Devenir Premium</Link>
                 </div>
 
                 <div className="bg-white p-8 border border-gray-200">

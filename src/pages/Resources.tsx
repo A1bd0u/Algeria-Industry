@@ -1,12 +1,17 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  BookOpen, FileText, GraduationCap, Gavel, 
-  Search, ChevronRight, Download, Clock, 
-  Tag, Newspaper, PlayCircle, ExternalLink
+import {
+  BookOpen,
+  ChevronRight,
+  Clock,
+  Download,
+  ExternalLink,
+  FileText,
+  Gavel,
+  GraduationCap,
+  Newspaper, PlayCircle,
+  Tag
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 
 const Resources = () => {
   const categories = [
@@ -134,13 +139,13 @@ const Resources = () => {
                   Développez les compétences de vos équipes avec nos modules de formation certifiants conçus par des experts.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <Link to="/contact" className="bg-white text-secondary px-8 py-3 rounded-xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2">
+                  <button onClick={(e) => { e.preventDefault(); window.scrollTo({top: window.innerHeight, behavior: 'smooth'}); }} className="bg-white text-secondary px-8 py-3 rounded-xl font-bold hover:bg-primary hover:text-white transition-all flex items-center space-x-2">
                     <PlayCircle className="h-5 w-5" />
                     <span>Explorer les cours</span>
-                  </Link>
-                  <Link to="/contact" className="bg-white/10 border border-white/20 px-8 py-3 rounded-xl font-bold hover:bg-white/20 transition-all flex items-center justify-center">
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); alert("Ouverture de la brochure d'information des formations..."); }} className="bg-white/10 border border-white/20 px-8 py-3 rounded-xl font-bold hover:bg-white/20 transition-all flex items-center justify-center">
                     En savoir plus
-                  </Link>
+                  </button>
                 </div>
               </div>
             </section>
@@ -162,16 +167,9 @@ const Resources = () => {
                 ].map((item, i) => (
                   <button 
                     key={i} 
-                    onClick={() => {
-                        const blob = new Blob([`Contenu du document : ${item}`], { type: 'text/plain' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${item.toLowerCase().replace(/ /g, '_')}.txt`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
+                    onClick={(e) => {
+                        e.preventDefault();
+                        alert("Téléchargement lancé...");
                     }} 
                     className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-all group cursor-pointer text-left"
                   >

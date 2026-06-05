@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Search, Camera } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import SearchModal from './SearchModal';
+import { Camera, Search } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
+import SearchModal from './SearchModal';
 
 const StickySearchBar = () => {
   const { t, i18n } = useTranslation();
@@ -36,7 +35,7 @@ const StickySearchBar = () => {
                 "absolute inset-y-0 flex items-center space-x-2",
                 i18n.language === 'ar' ? "left-0 pl-2 space-x-reverse" : "right-0 pr-2"
               )}>
-                 <button className="p-2 text-gray-300 hover:text-secondary transition-colors" title="Recherche par image">
+                 <button className="p-2 text-gray-300 hover:text-secondary transition-colors" title="Recherche par image" onClick={(e) => { e.preventDefault(); const file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.click(); }}>
                     <Camera className="h-5 w-5" />
                  </button>
                  <button 

@@ -1,9 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, Building2, CheckCircle2, LayoutDashboard, Search, Settings } from 'lucide-react';
 import { motion } from 'motion/react';
-import { CheckCircle2, ArrowRight, LayoutDashboard, Search, Settings, Building2 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const RegisterSuccess = () => {
   const { i18n } = useTranslation();

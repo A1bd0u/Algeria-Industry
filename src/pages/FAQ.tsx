@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ChevronDown, Search, MessageSquare, 
-  Settings, User, ShieldCheck, Zap, 
-  HelpCircle, Phone, Mail
+import {
+  ChevronDown,
+  HelpCircle,
+  Mail,
+  Phone,
+  Search
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../lib/utils';
 
 const FAQ = () => {
   const { i18n } = useTranslation();
@@ -151,11 +153,11 @@ const FAQ = () => {
             <p className="text-white/60 font-medium text-sm">Nos experts industriels sont à votre disposition.</p>
           </div>
           <div className="relative z-10 flex flex-wrap justify-center gap-4">
-             <button className="flex items-center space-x-3 bg-secondary px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all">
+             <button className="flex items-center space-x-3 bg-secondary px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 <Phone className="h-4 w-4" />
                 <span>Appel Expert</span>
              </button>
-             <button className="flex items-center space-x-3 bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all">
+             <button className="flex items-center space-x-3 bg-white/10 border border-white/20 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 <Mail className="h-4 w-4" />
                 <span>Envoyer Ticket</span>
              </button>

@@ -1,13 +1,21 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  CreditCard, Check, Zap, Award, ShieldCheck, 
-  ArrowRight, Download, Calendar, History,
-  TrendingUp, Building2, User, Package
+import {
+  ArrowRight,
+  Award,
+  Building2,
+  Calendar,
+  Check,
+  CreditCard,
+  Download,
+  History,
+  Package,
+  ShieldCheck,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const Subscriptions = () => {
   const { i18n } = useTranslation();
@@ -143,12 +151,12 @@ const Subscriptions = () => {
                   <p className="text-white/60 text-sm font-medium">Prochaine facturation : 15 Juillet 2024</p>
                 </div>
                 <div className="flex gap-4">
-                  <Link to="/contact" className="px-8 py-4 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-secondary/20 hover:scale-105 transition-all text-center">
+                  <button onClick={(e) => { e.preventDefault(); window.scrollTo({top: window.innerHeight, behavior: 'smooth'}); }} className="px-8 py-4 bg-secondary text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-secondary/20 hover:scale-105 transition-all text-center">
                     Changer de plan
-                  </Link>
-                  <Link to="/contact" className="px-8 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-xs border border-white/20 hover:bg-white/20 transition-all text-center">
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); alert("Êtes-vous sûr de vouloir annuler ? Cette action sera effective à la fin de votre cycle de facturation."); }} className="px-8 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-xs border border-white/20 hover:bg-white/20 transition-all text-center">
                     Annuler
-                  </Link>
+                  </button>
                 </div>
               </div>
 
@@ -191,9 +199,9 @@ const Subscriptions = () => {
               </p>
             </div>
             
-            <Link to="/contact" className="w-full mt-8 py-4 border-2 border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all text-center block">
+            <button onClick={(e) => { e.preventDefault(); alert("Lancement de la passerelle de paiement..."); }} className="w-full mt-8 py-4 border-2 border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all text-center block">
               Modifier le mode de paiement
-            </Link>
+            </button>
           </motion.div>
         </div>
 
@@ -240,13 +248,13 @@ const Subscriptions = () => {
                   </ul>
                 </div>
                 
-                <Link 
-                  to="/contact"
-                  aria-disabled={plan.current}
+                <button 
+                  onClick={(e) => { e.preventDefault(); alert(plan.name === 'Enterprise' ? "Ouverture du formulaire de contact commercial..." : "Redirection vers le paiement..."); }}
+                  disabled={plan.current}
                   className={cn(
                     "w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all text-center block",
                     plan.current 
-                      ? "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed pointer-events-none" 
+                      ? "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed" 
                       : i === 0 
                         ? "bg-primary text-white" 
                         : i === 2 
@@ -255,7 +263,7 @@ const Subscriptions = () => {
                   )}
                 >
                   {plan.current ? 'Déjà Actif' : plan.name === 'Enterprise' ? 'Contacter Commercial' : 'Sélectionner'}
-                </Link>
+                </button>
               </div>
             ))}
           </div>
@@ -270,17 +278,7 @@ const Subscriptions = () => {
               </div>
               <h3 className="text-xl font-black text-primary uppercase tracking-tight">Historique des Factures</h3>
             </div>
-            <button onClick={() => {
-              const blob = new Blob(["Simulation d'archive ZIP des factures"], { type: 'application/zip' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = "factures.zip";
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }} className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] border-b-2 border-secondary/20 pb-1 hover:border-secondary transition-all">
+            <button onClick={(e) => { e.preventDefault(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['Factures'], {type: 'application/pdf'})); a.download = 'factures_all.pdf'; a.click(); }} className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] border-b-2 border-secondary/20 pb-1 hover:border-secondary transition-all">
               Télécharger Tout (ZIP)
             </button>
           </div>
@@ -313,18 +311,7 @@ const Subscriptions = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <button onClick={(e) => {
-                        e.preventDefault();
-                        const blob = new Blob([`Visualisation Facture ${t.id} - ${t.date} - ${t.amount}`], { type: 'application/pdf' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `facture_${t.id}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                      }} className="text-primary hover:text-secondary p-2 hover:bg-primary/5 rounded-lg transition-all inline-block">
+                      <button onClick={(e) => { e.preventDefault(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['Facture'], {type: 'application/pdf'})); a.download = 'facture.pdf'; a.click(); }} className="text-primary hover:text-secondary p-2 hover:bg-primary/5 rounded-lg transition-all inline-block">
                         <Download className="h-5 w-5" />
                       </button>
                     </td>

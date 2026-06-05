@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ChevronDown, Star } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
-import { motion, AnimatePresence } from 'motion/react';
 
 const TopBar = () => {
+  const [lang, setLang] = React.useState("FR");
+  const [showLangMenu, setShowLangMenu] = React.useState(false);
   const { t, i18n } = useTranslation();
   const { currency, setCurrency } = useCurrency();
   const [showLang, setShowLang] = useState(false);
@@ -63,7 +65,7 @@ const TopBar = () => {
           </div>
 
           {/* My Account / Star */}
-          <button className="flex items-center space-x-1.5 hover:text-secondary transition-colors">
+          <button className="flex items-center space-x-1.5 hover:text-secondary transition-colors" onClick={() => setShowLangMenu(!showLangMenu)}>
             <Star className="h-3.5 w-3.5 text-secondary fill-secondary" />
             <span className="text-white">{t('topbar.my_account')}</span>
             <span className="text-white font-black tracking-tighter">ALGERIA INDUSTRY</span>

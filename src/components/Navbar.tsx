@@ -1,11 +1,11 @@
+import { Award, BookOpen, ChevronDown, ChevronRight, Component, FileText, Globe, HardHat, Library, LogOut, Menu, Newspaper, Package, Search, Settings, ShieldCheck, Truck, UserCircle, Wrench, X, Zap } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, ChevronRight, Globe, Package, BookOpen, FileText, Newspaper, Zap, Award, Wrench, Settings, Truck, ShieldCheck, HardHat, FlaskConical, Library, Component, Search, UserCircle, LogOut } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from '../context/CurrencyContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { cn } from '../lib/utils';
 import SearchModal from './SearchModal';
 
 const Navbar = () => {

@@ -1,12 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   company: string;
-  role: 'acheteur' | 'fournisseur' | 'admin';
+  role: 'acheteur' | 'fournisseur' | 'admin' | 'exposant';
   isVerified: boolean;
+  companyStatus?: string;
 }
 
 interface AuthContextType {

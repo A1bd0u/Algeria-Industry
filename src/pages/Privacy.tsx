@@ -1,11 +1,10 @@
-import React from 'react';
-import { Eye, Lock, Database, UserCheck, ShieldAlert, FileSearch } from 'lucide-react';
+import { Database, Eye, FileSearch, Lock, ShieldAlert, UserCheck } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
-import { motion } from 'motion/react';
 
 const Privacy = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   return (
     <div className={cn("bg-neutral-bg min-h-screen pb-20", i18n.language === 'ar' && "font-arabic")}>

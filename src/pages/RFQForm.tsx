@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  FileText, Send, Building2, Package, 
-  Plus, Trash2, ShieldCheck, Mail, 
-  Phone, Globe, Zap, ArrowRight, CheckCircle2,
-  AlertCircle, Loader2
+import {
+  AlertCircle,
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  FileText,
+  Globe,
+  Loader2,
+  Mail,
+  Package,
+  Phone,
+  Plus,
+  Send,
+  ShieldCheck,
+  Trash2,
+  Zap
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const RFQForm = () => {
   const { i18n } = useTranslation();

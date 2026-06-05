@@ -1,14 +1,15 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  X, Check, Minus, ShoppingCart, 
-  ArrowLeft, Package, Trash2, 
-  Zap, ShieldCheck, Scale
+import {
+  ArrowLeft,
+  Scale,
+  ShieldCheck,
+  ShoppingCart,
+  Trash2,
+  X
 } from 'lucide-react';
-import { useComparison } from '../context/ComparisonContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import { useComparison } from '../context/ComparisonContext';
+import { cn } from '../lib/utils';
 
 const Compare = () => {
   const { items, removeItem, clearComparison } = useComparison();
@@ -79,7 +80,7 @@ const Compare = () => {
                     <h3 className="text-primary font-black uppercase tracking-tighter leading-tight mb-4">{product.name}</h3>
                     <div className="flex items-center justify-between mt-auto">
                       <span className="text-sm font-black text-primary uppercase">{product.price}</span>
-                      <button className="p-3 bg-primary text-white rounded-xl hover:bg-secondary transition-all shadow-lg">
+                      <button className="p-3 bg-primary text-white rounded-xl hover:bg-secondary transition-all shadow-lg" onClick={(e) => { e.preventDefault(); window.print(); }}>
                         <ShoppingCart className="h-4 w-4" />
                       </button>
                     </div>
@@ -123,7 +124,7 @@ const Compare = () => {
           <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff, #fff 1px, transparent 1px, transparent 10px)', backgroundSize: '20px 20px' }} />
           <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 relative z-10">Optimisez votre Par Industriel</h2>
           <p className="text-white/40 font-bold uppercase tracking-[0.2em] mb-10 text-xs relative z-10">Demandez un devis groupé pour ces configurations</p>
-          <button className="bg-secondary px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest shadow-2xl shadow-secondary/30 hover:scale-105 transition-all relative z-10">
+          <button className="bg-secondary px-12 py-5 rounded-2xl text-sm font-black uppercase tracking-widest shadow-2xl shadow-secondary/30 hover:scale-105 transition-all relative z-10" onClick={(e) => { e.preventDefault(); alert("Vos demandes de devis ont été envoyées aux fournisseurs."); }}>
             Devis Comparatif Express
           </button>
         </div>

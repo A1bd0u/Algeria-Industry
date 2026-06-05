@@ -1,7 +1,7 @@
+import { ArrowRight, Building2, Eye, EyeOff, Globe, Loader2, Lock, Mail } from 'lucide-react';
+import { motion } from 'motion/react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Building2, Globe, Loader2 } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -130,11 +130,11 @@ const Login = () => {
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
               <Globe className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-bold text-gray-700">Google</span>
             </button>
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
               <div className="bg-[#0077b5] p-0.5 rounded text-white">
                 <ArrowRight className="h-3 w-3" />
               </div>
