@@ -85,25 +85,25 @@ const Exhibitors = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white p-4 rounded-[32px] border border-gray-100 shadow-xl mb-12 flex flex-col md:flex-row gap-4">
-          <div className="flex-1 flex items-center px-4 bg-gray-50 rounded-2xl border border-gray-100 focus-within:border-secondary transition-all">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="mb-12 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+            <Search className="h-5 w-5 text-gray-400 ml-3" />
             <input 
               type="text" 
               placeholder="Rechercher une entreprise par nom ou activité..."
-              className="w-full bg-transparent p-4 text-sm font-medium focus:outline-none"
+              className="flex-1 bg-transparent px-4 py-3 text-sm font-medium focus:outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <button onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="px-6 py-3 bg-primary rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-secondary transition-all">
+              Rechercher
+            </button>
           </div>
           <div className="flex gap-4">
-            <select className="bg-white px-6 py-4 rounded-2xl border border-gray-100 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-secondary">
+            <select className="bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
               <option>Tous les Secteurs</option>
               {sectors.slice(1).map(s => <option key={s}>{s}</option>)}
             </select>
-            <button onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="btn-primary py-4 px-10 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all text-center inline-block">
-              <span className="text-xs font-black uppercase tracking-widest">Filtrer</span>
-            </button>
           </div>
         </div>
 

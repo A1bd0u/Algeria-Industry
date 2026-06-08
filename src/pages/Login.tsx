@@ -13,6 +13,41 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+        return;
+      }
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        window.location.href = '/dashboard';
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleOAuthConnect = async (provider: 'google' | 'linkedin') => {
+    try {
+      const response = await fetch(`/api/auth/oauth/url?provider=${provider}`);
+      if (!response.ok) {
+        throw new Error('Failed to get auth URL');
+      }
+      const { url } = await response.json();
+      const authWindow = window.open(
+        url,
+        'oauth_popup',
+        'width=600,height=700'
+      );
+      if (!authWindow) {
+        setError('Veuillez autoriser les popups pour vous connecter.');
+      }
+    } catch (err: any) {
+      console.error('OAuth error:', err);
+      setError('Impossible d\'initier la connexion avec ' + provider);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -130,11 +165,19 @@ const Login = () => {
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+            <button 
+              type="button"
+              onClick={() => handleOAuthConnect('google')}
+              className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            >
               <Globe className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-bold text-gray-700">Google</span>
             </button>
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+            <button 
+              type="button"
+              onClick={() => handleOAuthConnect('linkedin')}
+              className="flex items-center justify-center space-x-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            >
               <div className="bg-[#0077b5] p-0.5 rounded text-white">
                 <ArrowRight className="h-3 w-3" />
               </div>

@@ -13,8 +13,9 @@ import {
 import { motion } from 'motion/react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/Skeleton';
+import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 
 const Products = () => {
@@ -26,43 +27,101 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('Toutes les régions');
 
-  const categories = [
-    'Tous', 'Usinage', 'Plasturgie', 'Énergie', 'BTP', 'Logistique', 'Agroalimentaire', 'Hydraulique', 'Pneumatique', 'Outillage'
-  ];
-
-  const regions = ["Alger", "Oran", "Constantine", "Béjaïa", "Sétif", "Bordj Bou Arreridj"];
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [products, setProducts] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const categories = ['Tous', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const regionsList = ["Toutes les régions", ...Array.from(new Set(products.map(p => p.region).filter(Boolean)))];
+
+  const fetchFavorites = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await fetch('/api/favorites');
+      if (res.ok) {
+        const data = await res.json();
+        setFavorites(data.filter((f: any) => f.item_type === 'product'));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch('/api/products').catch(() => null);
+        const res = await fetch('/api/products');
         
-        let data = [
-           { id: 1, name: "Unité de Filtration Haute Pression", price: "Sur demande", category: "Agroalimentaire", region: "Alger", verified: true, brand: "Global Filtration", image: "https://picsum.photos/seed/p1/600/400" },
-           { id: 2, name: "Générateur Industriel 500kW", price: "450 000 DA", category: "Énergie", region: "Oran", verified: true, brand: "Elec DZ", image: "https://picsum.photos/seed/p2/600/400" },
-           { id: 3, name: "Pompe Centrifuge A200", price: "120 000 DA", category: "Hydraulique", region: "Sétif", verified: false, brand: "MecaTech", image: "https://picsum.photos/seed/p3/600/400" }
-        ];
-
-        if (res && res.ok) {
-           data = await res.json();
+        if (!res.ok) {
+           throw new Error('Erreur lors du chargement des produits');
         }
         
-        // Formatter les données pour le catalogue complet (simuler des données supplémentaires)
+        let data = await res.json();
+        
+        // Formatter les données
+        if (data.length === 0) {
+          // Fallback to hardcoded mock data if database is empty
+          data = [
+            {
+              id: "550e8400-e29b-41d4-a716-446655440000",
+              reference_id: "PRD-A45B81",
+              name: "Pompe Centrifuge Industrielle",
+              brand: "Global Flow",
+              price: "Sur devis",
+              cat: "Équipement",
+              region: "Alger",
+              image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
+              features: ["Haut débit", "Acier Inox"],
+              verified: true,
+              owner_id: "system"
+            },
+            {
+              id: "c98b8400-e29b-41d4-a716-446655440111",
+              reference_id: "PRD-91BC2A",
+              name: "Filtre à Cartouche Haute Pression",
+              brand: "AquaTech",
+              price: "120 000 DZD",
+              cat: "Filtration",
+              region: "Oran",
+              image: "https://images.unsplash.com/photo-1532522750741-628fde798c73?auto=format&fit=crop&q=80&w=800",
+              features: ["5 Microns", "Maintenance facile"],
+              verified: true,
+              owner_id: "system"
+            },
+            {
+               id: "a12b8400-d29b-41d4-a716-446655440333",
+               reference_id: "PRD-5XQPL2",
+               name: "Vanne Papillon Motorisée",
+               brand: "ValvePro",
+               price: "Sur devis",
+               cat: "Robinetterie",
+               region: "Sétif",
+               image: "https://images.unsplash.com/photo-1563851509-0ee216d6fcb2?auto=format&fit=crop&q=80&w=800",
+               features: ["Commande électrique", "Étanchéité totale"],
+               verified: false,
+               owner_id: "system"
+             }
+          ];
+        }
+
+        // Formatter les données pour le catalogue complet
         data = data.map((p: any) => ({
            id: p.id,
+           reference_id: p.reference_id,
            name: p.name,
            brand: p.brand || 'Marque Standard',
            price: p.price,
-           category: p.cat || p.category,
-           region: regions[Math.floor(Math.random() * regions.length)], // Mock logic for demo
+           category: p.cat || p.category || 'Non catégorisé',
+           region: p.region || 'Alger',
            image: p.image || p.file_url || `https://picsum.photos/seed/${p.id}/600/400`,
            features: p.features || ['Précision', 'Haute Performance'],
-           verified: p.verified !== undefined ? p.verified : true
+           verified: p.verified !== undefined ? p.verified : true,
+           owner_id: p.owner_id
         }));
 
         setProducts(data);
@@ -74,16 +133,49 @@ const Products = () => {
     };
     
     fetchProducts();
-  }, []);
+    fetchFavorites();
+  }, [isAuthenticated]);
+
+  const toggleFavorite = async (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    const isFav = favorites.find(f => f.item_id === productId);
+    try {
+      if (isFav) {
+        // Remove favorite
+        await fetch(`/api/favorites/item/${productId}`, { method: 'DELETE' });
+        setFavorites(prev => prev.filter(f => f.item_id !== productId));
+      } else {
+        // Add favorite
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item_type: 'product', item_id: productId })
+        });
+        if (res.ok) {
+          const added = await res.json();
+          setFavorites(prev => [...prev, added]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const filteredProducts = products.filter(product => {
      if (activeCategory !== 'Tous' && product.category !== activeCategory) return false;
      if (selectedRegion !== 'Toutes les régions' && product.region !== selectedRegion) return false;
      if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        return product.name.toLowerCase().includes(query) ||
-               product.brand.toLowerCase().includes(query) ||
-               product.category.toLowerCase().includes(query);
+        return product.name?.toLowerCase().includes(query) ||
+               product.brand?.toLowerCase().includes(query) ||
+               product.category?.toLowerCase().includes(query) ||
+               product.id?.toLowerCase().includes(query) ||
+               product.reference_id?.toLowerCase().includes(query);
      }
      return true;
   });
@@ -179,7 +271,7 @@ const Products = () => {
                     className="w-full bg-gray-50 border-none p-3 rounded-xl text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-secondary/20"
                   >
                     <option value="Toutes les régions">Toutes les régions</option>
-                    {regions.map(r => (
+                    {regionsList.slice(1).map(r => (
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
@@ -209,7 +301,7 @@ const Products = () => {
 
           {/* Product Grid */}
           <main className="flex-1">
-            <div className="mb-6 flex items-center bg-white p-2 rounded-2xl border border-gray-100">
+            <div className="mb-6 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
               <Search className="h-5 w-5 text-gray-400 ml-3" />
               <input 
                 type="text"
@@ -218,7 +310,7 @@ const Products = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent px-4 py-3 text-sm font-medium focus:outline-none"
               />
-              <button className="px-6 py-3 bg-gray-50 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-gray-100" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+              <button className="px-6 py-3 bg-primary rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-secondary transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                 Rechercher
               </button>
             </div>
@@ -277,13 +369,26 @@ const Products = () => {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-black text-secondary tracking-[0.2em] uppercase">{product.brand}</span>
-                        <button className="text-gray-300 hover:text-secondary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
-                          <Star className="h-4 w-4" />
+                        <button 
+                          className={cn(
+                            "transition-colors hover:scale-110",
+                            favorites.some(f => f.item_id === product.id)
+                              ? "text-red-500" 
+                              : "text-gray-300 hover:text-red-400"
+                          )}
+                          onClick={(e) => toggleFavorite(e, product.id)}
+                        >
+                          <Star className="h-4 w-4" fill={favorites.some(f => f.item_id === product.id) ? "currentColor" : "none"} />
                         </button>
                       </div>
-                      <h3 className="text-lg font-black text-primary leading-tight mb-4 group-hover:text-secondary transition-colors">
+                      <h3 className="text-lg font-black text-primary leading-tight mb-2 group-hover:text-secondary transition-colors">
                         {product.name}
                       </h3>
+                      {product.reference_id && (
+                        <p className="text-[10px] font-mono text-gray-400 mb-4 tracking-wider">
+                          REF: {product.reference_id}
+                        </p>
+                      )}
                       <div className="grid grid-cols-1 gap-2 mb-6">
                         {product.features.map((f, i) => (
                           <div key={i} className="flex items-center space-x-2 text-[10px] text-gray-400 font-bold uppercase italic">

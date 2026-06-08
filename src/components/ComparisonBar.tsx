@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Columns, GitCompare, X, Zap } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useComparison } from '../context/ComparisonContext';
 
 const ComparisonBar = () => {

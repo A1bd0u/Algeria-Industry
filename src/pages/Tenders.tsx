@@ -55,8 +55,8 @@ const Tenders = () => {
         setIsLoading(true);
         const res = await fetch('/api/tenders').catch(() => null);
         let data = [
-          { id: '1', title: "Fourniture de pompes centrifuges", category: "Équipement", author: { name: "Ahmed", company: "Sonatrach SPA" }, deadline: "2026-07-20", status: "open", description: "Demande de fourniture pour 10 pompes centrifuges industrielles haut débit." },
-          { id: '2', title: "Installation de système anti-incendie", category: "Sécurité", author: { name: "Karim", company: "Cosider Construction" }, deadline: "2026-06-15", status: "Urgent", description: "Installation système de sécurité incendie complet pour le nouveau hangar industriel." }
+          { id: '1', reference_id: 'TND-B82XQL', title: "Fourniture de pompes centrifuges", category: "Équipement", author: { name: "Ahmed", company: "Sonatrach SPA" }, deadline: "2026-07-20", status: "open", description: "Demande de fourniture pour 10 pompes centrifuges industrielles haut débit." },
+          { id: '2', reference_id: 'TND-9C4M1V', title: "Installation de système anti-incendie", category: "Sécurité", author: { name: "Karim", company: "Cosider Construction" }, deadline: "2026-06-15", status: "Urgent", description: "Installation système de sécurité incendie complet pour le nouveau hangar industriel." }
         ];
         
         if (res && res.ok) {
@@ -201,21 +201,24 @@ const Tenders = () => {
               </div>
 
               <div className="flex-1 flex gap-4 w-full">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="flex-1 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                  <Search className="h-5 w-5 text-gray-400 ml-3" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Rechercher un appel d'offre..."
-                    className="w-full bg-white border border-gray-200 pl-12 pr-4 py-3 text-xs font-bold outline-none focus:border-secondary transition-all"
+                    className="flex-1 bg-transparent px-4 py-2 text-sm font-medium focus:outline-none"
                   />
+                  <button className="px-6 py-2 bg-primary rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-secondary transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+                    Rechercher
+                  </button>
                 </div>
                 
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-white border border-gray-200 px-4 py-3 text-xs font-bold outline-none focus:border-secondary transition-all uppercase tracking-wider"
+                  className="bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all uppercase tracking-wider cursor-pointer"
                 >
                   {tenderCategories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -258,9 +261,11 @@ const Tenders = () => {
                   .filter(t => {
                     if (!searchQuery) return true;
                     const query = searchQuery.toLowerCase();
-                    return t.title.toLowerCase().includes(query) ||
-                           t.description.toLowerCase().includes(query) ||
-                           (t.author?.company && t.author.company.toLowerCase().includes(query));
+                    return t.title?.toLowerCase().includes(query) ||
+                           t.description?.toLowerCase().includes(query) ||
+                           (t.author?.company && t.author.company.toLowerCase().includes(query)) ||
+                           t.id?.toLowerCase().includes(query) ||
+                           t.reference_id?.toLowerCase().includes(query);
                   })
                   .map((tender, index) => (
                   <motion.div 
@@ -287,7 +292,12 @@ const Tenders = () => {
                             {tender.status === 'open' ? 'Ouvert' : tender.status}
                           </span>
                         </div>
-                        <h3 className="text-2xl font-black text-primary group-hover:text-secondary transition-colors mb-4 uppercase tracking-tighter leading-tight">{tender.title}</h3>
+                        <h3 className="text-2xl font-black text-primary group-hover:text-secondary transition-colors mb-2 uppercase tracking-tighter leading-tight">{tender.title}</h3>
+                        {tender.reference_id && (
+                          <p className="text-[10px] font-mono text-gray-400 mb-4 tracking-wider">
+                            REF: {tender.reference_id}
+                          </p>
+                        )}
                         <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-6">
                           <div className="flex items-center space-x-2">
                             <Building2 className="h-4 w-4 text-secondary" />

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,11 +13,12 @@ import {
   Truck
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProductDetailSkeleton } from '../components/Skeleton';
 import { Product as IProduct, useComparison } from '../context/ComparisonContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 
 const ProductDetail = () => {
@@ -29,53 +29,94 @@ const ProductDetail = () => {
   const { comparedProducts, addToCompare, removeFromCompare } = useComparison();
   const [activeImage, setActiveImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
+  const [product, setProduct] = useState<any>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // Mock product data logic inside useEffect to simulate fetch
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [id]);
+    const fetchFavoriteStatus = async () => {
+      if (!isAuthenticated || !id) return;
+      try {
+        const res = await fetch('/api/favorites');
+        if (res.ok) {
+          const data = await res.json();
+          setIsFavorite(data.some((f: any) => f.item_id === id));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  // Mock product data logic
-  const product = {
-    id: id || "0",
-    name: "Unité de Filtration Industrielle X-Pro",
-    brand: "AF SYS",
-    company: "Algeria Filtration Systems",
-    price: 850000,
-    category: "Hydraulique",
-    rating: 4.8,
-    reviews: 24,
-    stock: "En Stock",
-    image: "https://picsum.photos/seed/filter1/800/800",
-    images: [
-      "https://picsum.photos/seed/filter1/800/800",
-      "https://picsum.photos/seed/filter2/800/800",
-      "https://picsum.photos/seed/filter3/800/800",
-    ],
-    description: "Système de filtration haute performance conçu pour les environnements de production intensifs. Élimine 99.9% des impuretés microscopiques avec un débit constant.",
-    specs: { 
-      "Modèle": "FILT-2026-XP",
-      "Débit": "500 L/min",
-      "Pression Max": "10 Bar",
-      "Matériau": "Acier Inoxydable 316L",
-      "Poids": "45 kg",
-      "Alimentation": "380V / 50Hz"
-    },
-    features: [
-      "Nettoyage automatique intégré",
-      "Contrôle numérique de la pression",
-      "Installation plug-and-play",
-      "Garantie constructeur 5 ans"
-    ]
+    const fetchProduct = async () => {
+      try {
+        setIsLoading(true);
+        // We'll mock the rest since there's no /api/products/:id explicitly defined
+        const res = await fetch('/api/products');
+        if (res.ok) {
+           const data = await res.json();
+           const p = data.find((p: any) => p.id === id);
+           if (p) {
+             setProduct({
+               id: p.id,
+               name: p.name,
+               category: p.category || p.cat || 'Équipement',
+               brand: p.brand || p.owner_id || 'Entreprise',
+               company: p.brand || p.owner_id || "Algeria Systems",
+               price: typeof p.price === 'string' ? parseFloat(p.price.replace(/[^0-9.]/g, '') || '0') : (p.price || 850000),
+               rating: 4.8,
+               reviews: 24,
+               stock: 'En Stock',
+               image: p.file_url || p.image || `https://picsum.photos/seed/${p.id}/800/800`,
+               images: [p.file_url || p.image || `https://picsum.photos/seed/${p.id}/800/800`, `https://picsum.photos/seed/${p.id}-2/800/800`, `https://picsum.photos/seed/${p.id}-3/800/800`],
+               description: p.description || "Un équipement de haute performance...",
+               features: p.features || ['Précision', 'Fiabilité', 'Facile à intégrer'],
+               specs: {
+                 'Catégorie': p.category || p.cat || 'Standard',
+                 'Région': p.region || 'Alger'
+               }
+             });
+           }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+    fetchFavoriteStatus();
+  }, [id, isAuthenticated]);
+
+  const toggleFavorite = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      if (isFavorite) {
+        await fetch(`/api/favorites/item/${id}`, { method: 'DELETE' });
+        setIsFavorite(false);
+      } else {
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item_type: 'product', item_id: id })
+        });
+        if (res.ok) {
+          setIsFavorite(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const isCompared = comparedProducts.find(p => p.id === product.id);
+  const isCompared = product && comparedProducts.find(p => p.id === product.id);
 
   const toggleCompare = () => {
+    if (!product) return;
     if (isCompared) {
       removeFromCompare(product.id);
     } else {
@@ -83,7 +124,7 @@ const ProductDetail = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !product) {
     return <ProductDetailSkeleton />;
   }
 
@@ -113,8 +154,14 @@ const ProductDetail = () => {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-6 right-6 flex flex-col space-y-3">
-                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-error transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
-                  <Heart className="h-5 w-5" />
+                <button 
+                  className={cn(
+                    "bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg transition-colors",
+                    isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
+                  )} 
+                  onClick={(e) => { e.preventDefault(); toggleFavorite(); }}
+                >
+                  <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
                 </button>
                 <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-primary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
                   <Share2 className="h-5 w-5" />

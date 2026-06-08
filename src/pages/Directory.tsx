@@ -30,6 +30,7 @@ const Directory = () => {
         const fallbackData = [
           {
             id: 1,
+            reference_id: "CMP-7Y2M1B",
             name: "Algerian Industrial Solutions",
             activity_sector: "Automobile",
             description: "Leader de la construction mécanique",
@@ -37,6 +38,7 @@ const Directory = () => {
           },
           {
             id: 2,
+            reference_id: "CMP-X94P2C",
             name: "Sonatrach Hub",
             activity_sector: "Énergie",
             description: "Pôle pétrolier international",
@@ -44,6 +46,7 @@ const Directory = () => {
           },
           {
             id: 3,
+            reference_id: "CMP-8Q1Z4D",
             name: "Agro Dz",
             activity_sector: "Agroalimentaire",
             description: "Production de céréales locale",
@@ -108,7 +111,9 @@ const Directory = () => {
       return (
         company.name.toLowerCase().includes(query) ||
         company.description.toLowerCase().includes(query) ||
-        company.sector.toLowerCase().includes(query)
+        company.sector.toLowerCase().includes(query) ||
+        company.id?.toString().toLowerCase().includes(query) ||
+        company.reference_id?.toLowerCase().includes(query)
       );
     }
     
@@ -169,13 +174,13 @@ const Directory = () => {
               </div>
 
               <div className={cn("mb-8", i18n.language === 'ar' && "text-right")}>
-                <span className="tech-label">{t('common.search')}</span>
-                <div className="relative mt-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t('common.search')}</span>
+                <div className="mt-4 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                  <Search className="h-4 w-4 text-gray-400 ml-2" />
                   <input 
                     type="text" 
                     placeholder="Filtrer par nom..."
-                    className="w-full pl-10 pr-4 py-3 bg-neutral-bg border-border-tech rounded-none text-[11px] font-bold uppercase tracking-wider outline-none focus:border-secondary transition-all"
+                    className="flex-1 bg-transparent px-3 py-2 text-xs font-medium focus:outline-none w-full"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -183,8 +188,8 @@ const Directory = () => {
               </div>
 
               {/* Sector Filter */}
-              <div className={cn("mb-8 pt-8 border-t border-border-tech", i18n.language === 'ar' && "text-right")}>
-                <span className="tech-label">{t('directory.sector')}</span>
+              <div className={cn("mb-8 pt-8 border-t border-gray-100", i18n.language === 'ar' && "text-right")}>
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t('directory.sector')}</span>
                 <div className="space-y-3 mt-4">
                   {sectors.map((sector) => (
                     <label key={sector} className={cn("flex items-center space-x-3 cursor-pointer group", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
@@ -192,11 +197,11 @@ const Directory = () => {
                         type="checkbox" 
                         checked={selectedSectors.includes(sector)}
                         onChange={() => toggleSector(sector)}
-                        className="w-4 h-4 rounded-none border-border-tech text-secondary focus:ring-secondary" 
+                        className="w-4 h-4 rounded-md border-gray-200 text-primary focus:ring-primary/20" 
                       />
                       <span className={cn(
                         "text-[11px] font-bold transition-colors uppercase tracking-wider",
-                        selectedSectors.includes(sector) ? "text-secondary" : "text-gray-500 group-hover:text-primary"
+                        selectedSectors.includes(sector) ? "text-primary" : "text-gray-500 group-hover:text-primary"
                       )}>{sector}</span>
                     </label>
                   ))}
@@ -204,12 +209,12 @@ const Directory = () => {
               </div>
 
               {/* Region Filter */}
-              <div className={cn("mb-8 pt-8 border-t border-border-tech", i18n.language === 'ar' && "text-right")}>
-                <span className="tech-label">{t('directory.region')}</span>
+              <div className={cn("mb-8 pt-8 border-t border-gray-100", i18n.language === 'ar' && "text-right")}>
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t('directory.region')}</span>
                 <select 
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full mt-4 bg-neutral-bg border-border-tech rounded-none text-[11px] font-bold uppercase tracking-wider focus:ring-secondary focus:border-secondary p-3 outline-none"
+                  className="w-full mt-4 bg-white border border-gray-100 rounded-xl shadow-sm text-xs font-medium p-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                 >
                    <option value={t('common.all')}>{t('common.all')}</option>
                    {regions.map(r => <option key={r} value={r}>{r}</option>)}
@@ -217,8 +222,8 @@ const Directory = () => {
               </div>
 
               {/* Zones Industrielles */}
-              <div className={cn("mb-8 pt-8 border-t border-border-tech", i18n.language === 'ar' && "text-right")}>
-                <span className="tech-label">{t('directory.zones')}</span>
+              <div className={cn("mb-8 pt-8 border-t border-gray-100", i18n.language === 'ar' && "text-right")}>
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t('directory.zones')}</span>
                 <div className={cn("flex flex-wrap gap-2 mt-4", i18n.language === 'ar' && "justify-end")}>
                   {["Rouiba", "Hassi Messaoud", "Arzew", "Chelghoum Laid"].map(zone => (
                     <button key={zone} className="px-3 py-1 bg-gray-50 border border-gray-100 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:border-secondary hover:text-secondary transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
@@ -229,18 +234,18 @@ const Directory = () => {
               </div>
 
               {/* Certification Toggle */}
-              <div className="pt-8 border-t border-border-tech">
+              <div className="pt-8 border-t border-gray-100">
                 <button 
                   onClick={() => setIsCertifiedOnly(!isCertifiedOnly)}
                   className={cn("flex items-center justify-between w-full cursor-pointer group", i18n.language === 'ar' && "flex-row-reverse")}
                 >
                   <span className="text-[11px] font-black text-primary uppercase tracking-widest">{t('directory.iso_only')}</span>
                   <div className={cn(
-                    "relative inline-flex h-5 w-10 items-center rounded-none transition-colors",
-                    isCertifiedOnly ? "bg-secondary" : "bg-gray-200 group-hover:bg-secondary/20"
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    isCertifiedOnly ? "bg-primary" : "bg-gray-200 group-hover:bg-primary/20"
                   )}>
                     <span className={cn(
-                      "inline-block h-3 w-3 transform bg-white transition",
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition shadow-sm",
                       isCertifiedOnly ? "translate-x-6" : "translate-x-1"
                     )} />
                   </div>
@@ -341,7 +346,7 @@ const Directory = () => {
                           <div className={cn("mt-8 pt-6 border-t border-border-tech grid grid-cols-2 md:grid-cols-4 gap-6", i18n.language === 'ar' && "md:flex md:flex-row-reverse md:justify-between")}>
                             <div className={i18n.language === 'ar' ? "text-right" : ""}>
                               <span className="tech-label">{t('directory.id_reg')}</span>
-                              <span className="text-[11px] font-mono font-bold text-primary">{company.founded}-DZ-{company.id.toString().padStart(4, '0')}</span>
+                              <span className="text-[11px] font-mono font-bold text-primary">{company.reference_id ? company.reference_id : `${company.founded}-DZ-${company.id.toString().substring(0, 4)}`}</span>
                             </div>
                             <div className={i18n.language === 'ar' ? "text-right" : ""}>
                               <span className="tech-label">{t('directory.workforce')}</span>

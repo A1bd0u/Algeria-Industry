@@ -1,5 +1,6 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
+import { generateReferenceId } from '../utils/reference';
 
 const router = express.Router();
 
@@ -8,10 +9,9 @@ router.get('/', async (req, res) => {
   try {
     const supabase = getSupabase();
     
-    // Jointure pour récupérer le nom du propriétaire si besoin
     const { data: companies, error } = await supabase
       .from('companies')
-      .select('*, users(name, email)');
+      .select('*');
 
     if (error) {
       throw error;
@@ -29,18 +29,32 @@ router.get('/:id', async (req, res) => {
   try {
     const supabase = getSupabase();
     
+    // Validate UUID format before querying
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(req.params.id)) {
+      return res.status(404).json({ error: "Entreprise non trouvée (ID invalide)" });
+    }
+
     const { data: company, error } = await supabase
       .from('companies')
-      .select('*, author:users(name, email)')
+      .select('*')
       .eq('id', req.params.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw error;
     }
 
+    if (!company) {
+      return res.status(404).json({ error: "Company not found" });
+    }
+
     return res.json(company);
   } catch (err: any) {
+    if (err.code === '22P02') {
+       // Invalid UUID
+       return res.status(404).json({ error: "Invalid ID format" });
+    }
     console.error("Supabase Error GET /companies/:id:", err);
     return res.status(500).json({ error: err.message });
   }
@@ -77,9 +91,10 @@ router.post('/', async (req, res) => {
       return res.json(data);
     } else {
       // Insert
+      const reference_id = generateReferenceId('CMP');
       const { data, error } = await supabase
         .from('companies')
-        .insert([{ name, nif, rc, description, activity_sector, owner_id }])
+        .insert([{ reference_id, name, nif, rc, description, activity_sector, owner_id }])
         .select()
         .single();
         

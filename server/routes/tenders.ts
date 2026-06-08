@@ -1,6 +1,7 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
 import { requireAuth, requireRole } from '../middlewares/authMiddleware';
+import { generateReferenceId } from '../utils/reference';
 
 const router = express.Router();
 
@@ -103,11 +104,13 @@ router.post('/', requireAuth, requireRole(['acheteur', 'admin']), async (req, re
   try {
     const supabase = getSupabase();
     const finalDescription = file_url ? `${description}\n\n[ATTACHMENT]: ${file_url}` : description;
+    const reference_id = generateReferenceId('TND');
     
     const { data, error } = await supabase
       .from('tenders')
       .insert([
         {
+          reference_id,
           title,
           description: finalDescription,
           budget: budget || null,
@@ -136,6 +139,12 @@ router.get('/:id', async (req, res) => {
   try {
     const supabase = getSupabase();
     
+    // Validate UUID format before querying
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(req.params.id)) {
+      return res.status(404).json({ error: "Appel d'offres non trouvé (ID invalide)" });
+    }
+
     const { data: tender, error } = await supabase
       .from('tenders')
       .select('*, author:users(name, company)')

@@ -150,7 +150,12 @@ const Dashboard = () => {
              fetch('/api/favorites')
            ]);
            if (prodRes.ok) {
-              const data = await prodRes.json();
+              let data = await prodRes.json();
+              if (data.length === 0) {
+                 data = [
+                   { id: "550e8400-e29b-41d4-a716-446655440000", reference_id: "PRD-A45B81", name: "Pompe Centrifuge Industrielle", status: "Actif", price: "Sur devis", views: 120, leads: 5 }
+                 ];
+              }
               setProducts(data);
            }
            if (msgRes.ok) {
@@ -158,7 +163,12 @@ const Dashboard = () => {
               setMessages(data);
            }
            if (favRes.ok) {
-              const data = await favRes.json();
+              let data = await favRes.json();
+              if (data.length === 0) {
+                 data = [
+                   { item_id: "a12b8400-d29b-41d4-a716-446655440333", item_type: "product", name: "Vanne Papillon Motorisée", reference_id: "PRD-5XQPL2" }
+                 ];
+              }
               setFavorites(data);
            }
         } catch (e) {
@@ -934,6 +944,7 @@ const Dashboard = () => {
                           <div>
                             <h4 className="text-sm font-black text-primary uppercase italic">{t.title}</h4>
                             <div className="flex items-center space-x-4 mt-1">
+                               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t.reference_id ? `REF: ${t.reference_id}` : `ID: ${t.id.substring(0, 8)}`}</span>
                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Publié le: {t.date}</span>
                                <span className="text-[9px] font-black text-secondary uppercase tracking-widest bg-secondary/5 px-2 py-0.5 rounded-full">{t.bids} OFFRES</span>
                             </div>
@@ -1012,7 +1023,7 @@ const Dashboard = () => {
                             <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all"><Package className="h-5 w-5" /></div>
                             <div>
                                <p className="text-xs font-black text-primary uppercase tracking-tight">{p.name}</p>
-                               <p className="text-[9px] font-bold text-gray-400 uppercase">SKU: PDZ-{p.id.toUpperCase()}</p>
+                               <p className="text-[9px] font-bold text-gray-400 uppercase">{p.reference_id ? `REF: ${p.reference_id}` : `ID: ${p.id.substring(0, 8)}`}</p>
                             </div>
                          </div>
                       </td>
@@ -1058,34 +1069,42 @@ const Dashboard = () => {
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {favorites.map((fav) => (
-              <div key={fav.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
+              <div key={fav.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl transition-all flex flex-col">
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                      <Building2 className="h-7 w-7" />
-                    </div>
+                    {fav.item_type === 'product' && fav.image ? (
+                      <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0">
+                         <img src={fav.image} alt={fav.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                        {fav.item_type === 'product' ? <Package className="h-7 w-7" /> : <Building2 className="h-7 w-7" />}
+                      </div>
+                    )}
                     <div>
-                      <h4 className="text-base font-black text-primary uppercase italic">{fav.name}</h4>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{fav.category}</p>
+                      <h4 className="text-base font-black text-primary uppercase italic">{fav.name || `Favori (${fav.reference_id || fav.item_id.substring(0,8)})`}</h4>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{fav.category || fav.item_type}</p>
+                      <p className="text-[9px] font-mono text-gray-400 uppercase mt-1 tracking-widest">
+                         {fav.reference_id ? `REF: ${fav.reference_id}` : `ID: ${fav.item_id.substring(0,8)}`}
+                      </p>
                     </div>
                   </div>
                   <button 
                     onClick={() => removeFavorite(fav.id)}
-                    className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                    className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shrink-0 ml-4"
                   >
                     <Heart className="h-4 w-4 fill-current" />
                   </button>
                 </div>
-                <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
                    <div className="flex items-center space-x-2 text-gray-500">
-                      <Users className="h-4 w-4" />
-                      <span className="text-[10px] font-bold uppercase">{fav.location}</span>
+                      <span className="text-[10px] font-bold uppercase">{fav.location || 'Alger'}</span>
                    </div>
                    <Link 
-                    to={`/company/1`}
+                    to={fav.item_type === 'product' ? `/products/${fav.item_id}` : `/company/${fav.item_id}`}
                     className="text-[10px] font-black text-secondary hover:underline uppercase tracking-widest flex items-center space-x-1"
                    >
-                     <span>Voir profil</span>
+                     <span>{fav.item_type === 'product' ? 'Voir produit' : 'Voir profil'}</span>
                      <ChevronRight className="h-3 w-3" />
                    </Link>
                 </div>
@@ -1097,7 +1116,7 @@ const Dashboard = () => {
                     <Heart className="h-10 w-10" />
                  </div>
                  <h4 className="text-xl font-black text-primary uppercase italic mb-2">Aucun favoris</h4>
-                 <p className="text-sm text-gray-500">Explorez l'annuaire pour ajouter des entreprises à vos favoris.</p>
+                 <p className="text-sm text-gray-500">Explorez le catalogue pour ajouter des produits à vos favoris.</p>
               </div>
             )}
           </motion.div>
