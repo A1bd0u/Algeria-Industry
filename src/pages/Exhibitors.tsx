@@ -6,7 +6,7 @@ import {
   Search, ShieldCheck, Star, ChevronDown, Check
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -19,6 +19,42 @@ const Exhibitors = () => {
   const [activeRegion, setActiveRegion] = useState('Toutes');
   const [isRegionOpen, setIsRegionOpen] = useState(false);
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+
+  const sectorRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sectorRef.current && !sectorRef.current.contains(event.target as Node)) {
+        setIsSectorOpen(false);
+      }
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setIsRegionOpen(false);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          if (entry.target === sectorRef.current) setIsSectorOpen(false);
+          if (entry.target === regionRef.current) setIsRegionOpen(false);
+        }
+      });
+    }, { threshold: 0 });
+
+    const currentSectorRef = sectorRef.current;
+    const currentRegionRef = regionRef.current;
+
+    if (currentSectorRef) observer.observe(currentSectorRef);
+    if (currentRegionRef) observer.observe(currentRegionRef);
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      observer.disconnect();
+    };
+  }, []);
 
   const sectors = ['Tous', 'Métallurgie', 'Pétrochimie', 'Automobile', 'Agro-Industrie', 'Énergie Solaire'];
   const regions = ['Toutes', 'Alger', 'Oran', 'Sétif', 'Annaba', 'Constantine', 'Blida'];
@@ -119,10 +155,9 @@ const Exhibitors = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-              <div className="relative">
+              <div className="relative" ref={sectorRef}>
                 <button
                   onClick={() => setIsSectorOpen(!isSectorOpen)}
-                  onBlur={() => setTimeout(() => setIsSectorOpen(false), 200)}
                   className="w-full sm:w-auto flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[260px] text-left"
                 >
                   <div className="flex flex-col gap-0.5">
@@ -157,10 +192,9 @@ const Exhibitors = () => {
                 )}
               </div>
 
-              <div className="relative">
+              <div className="relative" ref={regionRef}>
                 <button
                   onClick={() => setIsRegionOpen(!isRegionOpen)}
-                  onBlur={() => setTimeout(() => setIsRegionOpen(false), 200)}
                   className="w-full sm:w-auto flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[200px] text-left"
                 >
                   <div className="flex flex-col gap-0.5">
