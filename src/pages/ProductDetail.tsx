@@ -163,7 +163,15 @@ const ProductDetail = () => {
                 >
                   <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
                 </button>
-                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-primary transition-colors" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+                <button className="bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg text-gray-400 hover:text-primary transition-colors" onClick={(e) => { 
+                  e.preventDefault(); 
+                  if (navigator.share) {
+                    navigator.share({ title: document.title, url: window.location.href }).catch(console.error);
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("Lien copié dans le presse-papier !");
+                  }
+                }}>
                   <Share2 className="h-5 w-5" />
                 </button>
               </div>
@@ -243,7 +251,10 @@ const ProductDetail = () => {
                     <GitCompare className="h-5 w-5" />
                     <span>{isCompared ? "Comparé" : "Comparer"}</span>
                   </button>
-                  <button className="bg-neutral-bg text-primary py-4 rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-100 transition-all border border-gray-100" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+                  <button className="bg-neutral-bg text-primary py-4 rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-100 transition-all border border-gray-100" onClick={(e) => { 
+                    e.preventDefault(); 
+                    window.location.href = `mailto:contact@${product.company.toLowerCase().replace(/ /g, '')}.com?subject=Contact à propos de ${product.name}`;
+                  }}>
                     <MessageSquare className="h-5 w-5" />
                     <span>Contact Direct</span>
                   </button>

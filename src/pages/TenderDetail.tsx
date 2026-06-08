@@ -152,13 +152,13 @@ const TenderDetail = () => {
   return (
     <div className={cn("min-h-screen bg-neutral-bg pb-20", i18n.language === 'ar' && "font-arabic")}>
       {/* Dynamic Header */}
-      <div className="bg-primary pt-10 pb-20 text-white overflow-hidden relative">
-         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+      <div className="bg-white border-b border-gray-100 pt-6 pb-12 text-primary overflow-hidden relative">
+         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '40px 40px' }} />
          
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <button 
               onClick={() => navigate(-1)}
-              className="flex items-center space-x-2 text-white/50 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest mb-10 group"
+              className="flex items-center space-x-2 text-gray-400 hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest mb-6 group"
             >
               <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               <span>Retour à la liste</span>
@@ -168,58 +168,52 @@ const TenderDetail = () => {
                <div className="max-w-3xl">
                   <div className="flex items-center space-x-3 mb-6">
                     <span className={cn(
-                      "px-3 py-1 text-[9px] font-black uppercase tracking-widest flex items-center space-x-2",
-                      tender.type === 'Public' ? "bg-blue-500 text-white" : "bg-purple-500 text-white"
+                      "px-3 py-1 text-[9px] font-black uppercase tracking-widest flex items-center space-x-2 border",
+                      tender.type === 'Public' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-purple-50 text-purple-600 border-purple-100"
                     )}>
                       {tender.type === 'Public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                       <span>{tender.type}</span>
                     </span>
-                    <span className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase tracking-widest">
                        {tender.status}
                     </span>
-                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-4">Réf: {tender.reference}</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Réf: {tender.reference}</span>
                   </div>
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none mb-8">
                     {tender.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-8">
                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center">
                            <Building2 className="h-5 w-5 text-secondary" />
                         </div>
                         <div>
-                           <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">ÉMETTEUR</p>
+                           <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">ÉMETTEUR</p>
                            <p className="text-xs font-black uppercase">{tender.company}</p>
                         </div>
                      </div>
                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center">
                            <Calendar className="h-5 w-5 text-secondary" />
                         </div>
                         <div>
-                           <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">DATE DE FIN</p>
+                           <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">DATE DE FIN</p>
                            <p className="text-xs font-black uppercase">{tender.deadline}</p>
                         </div>
                      </div>
                   </div>
                </div>
                
-               <div className="bg-white/10 backdrop-blur-md p-8 border border-white/10 rounded-none shrink-0 min-w-[300px]">
-                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4">Urgence & Statut</p>
+               <div className="bg-gray-50 p-8 border border-gray-100 rounded-none shrink-0 min-w-[300px]">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Urgence & Statut</p>
                   <div className="space-y-4">
                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white/60">Temps restant</span>
+                        <span className="text-xs font-bold text-gray-400">Temps restant</span>
                         <span className="text-lg font-black text-secondary uppercase font-mono">12 JOURS</span>
                      </div>
-                     <div className="h-2 w-full bg-white/5 overflow-hidden">
+                     <div className="h-2 w-full bg-gray-200 overflow-hidden">
                         <div className="h-full bg-secondary w-2/3" />
                      </div>
-                     <button 
-                       onClick={() => setIsResponding(true)}
-                       className="w-full bg-secondary py-4 text-[10px] font-black uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-xl shadow-secondary/20"
-                     >
-                        Soumettre une offre
-                     </button>
                   </div>
                </div>
             </div>
@@ -227,7 +221,7 @@ const TenderDetail = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-20">
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Left Column */}
             <div className="lg:col-span-2 space-y-8">
@@ -347,13 +341,13 @@ const TenderDetail = () => {
                )}
 
                {/* Help Widget */}
-               <div className="bg-[#1a1a1a] p-10 text-white rounded-none">
+               <div className="bg-gray-50 border border-gray-100 p-10 text-primary rounded-none">
                   <User className="h-10 w-10 text-secondary mb-6" />
                   <h3 className="text-xl font-black uppercase tracking-tighter mb-4">Besoin d'aide ?</h3>
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8">
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8">
                     Nos experts métiers vous accompagnent dans la rédaction de votre offre technique.
                   </p>
-                  <button className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['Cahier des charges'], {type: 'application/pdf'})); a.download = 'cahier_des_charges.pdf'; a.click(); }}>
+                  <button className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] hover:text-primary transition-colors" onClick={(e) => { e.preventDefault(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['Cahier des charges'], {type: 'application/pdf'})); a.download = 'cahier_des_charges.pdf'; a.click(); }}>
                     Contacter un conseiller →
                   </button>
                </div>

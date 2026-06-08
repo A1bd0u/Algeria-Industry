@@ -172,7 +172,7 @@ const CompanyProfile = () => {
                   <Globe className="h-5 w-5 text-secondary mt-0.5" />
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Site Web</p>
-                    <a href="#" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="text-sm text-primary font-bold hover:underline flex items-center space-x-1">
+                    <a href={`https://${company.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary font-bold hover:underline flex items-center space-x-1">
                       <span>{company.website}</span>
                       <ExternalLink className="h-3 w-3" />
                     </a>
@@ -336,9 +336,9 @@ const CompanyProfile = () => {
                               <span className="bg-success/10 text-success px-2 py-0.5 rounded">Ouvert</span>
                             </div>
                           </div>
-                          <button className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
+                          <Link to={`/tenders/${tender.id}`} className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all">
                             <ChevronRight className="h-5 w-5" />
-                          </button>
+                          </Link>
                         </div>
                       ))}
                     </div>

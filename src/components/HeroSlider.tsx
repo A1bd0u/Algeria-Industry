@@ -30,7 +30,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
   const activeSlide = slides[current] || slides[0];
 
   return (
-    <div className={cn("relative h-[200px] md:h-[250px] w-full overflow-hidden bg-primary border-b border-border-tech", i18n.language === 'ar' && "font-arabic")}>
+    <div className={cn("relative h-[150px] md:h-[180px] w-full overflow-hidden bg-primary border-b border-border-tech", i18n.language === 'ar' && "font-arabic")}>
       {/* Technical Grid Background Overlay */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10" 
            style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
@@ -58,7 +58,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                 initial={{ x: i18n.language === 'ar' ? 50 : -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="hidden md:block w-32 h-40 lg:w-48 lg:h-56 flex-shrink-0 bg-white/5 backdrop-blur-sm p-3 border border-white/10"
+                className="hidden md:block w-24 h-32 lg:w-32 lg:h-40 flex-shrink-0 bg-white/5 backdrop-blur-sm p-3 border border-white/10"
               >
                 <img 
                   src={activeSlide.productImg} 
@@ -83,7 +83,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tighter mb-1 uppercase"
+                  className="text-xl md:text-2xl lg:text-3xl font-black tracking-tighter mb-1 uppercase"
                 >
                   {activeSlide.title}
                 </motion.h2>
@@ -91,7 +91,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-lg md:text-xl font-bold text-white/90 mb-3 font-mono tracking-tighter"
+                  className="text-md md:text-lg font-bold text-white/90 mb-2 font-mono tracking-tighter line-clamp-1"
                 >
                   {activeSlide.subtitle}
                 </motion.h3>
