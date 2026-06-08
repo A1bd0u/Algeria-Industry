@@ -3,7 +3,7 @@ import {
   Layout,
   MapPin,
   MessageSquare,
-  Search, ShieldCheck, Star
+  Search, ShieldCheck, Star, ChevronDown, Check
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState } from 'react';
@@ -14,8 +14,14 @@ import { cn } from '../lib/utils';
 const Exhibitors = () => {
   const { i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeSector, setActiveSector] = useState('Tous');
+  const [isSectorOpen, setIsSectorOpen] = useState(false);
+  const [activeRegion, setActiveRegion] = useState('Toutes');
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
 
   const sectors = ['Tous', 'Métallurgie', 'Pétrochimie', 'Automobile', 'Agro-Industrie', 'Énergie Solaire'];
+  const regions = ['Toutes', 'Alger', 'Oran', 'Sétif', 'Annaba', 'Constantine', 'Blida'];
 
   const exhibitors = [
     {
@@ -49,6 +55,17 @@ const Exhibitors = () => {
       verified: false
     }
   ];
+
+  const filteredExhibitors = exhibitors.filter(ex => {
+    if (showVerifiedOnly && !ex.verified) return false;
+    if (activeSector !== 'Tous' && ex.sector !== activeSector) return false;
+    if (activeRegion !== 'Toutes' && !ex.location.includes(activeRegion)) return false;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      return ex.name.toLowerCase().includes(q) || ex.description.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   return (
     <div className={cn("min-h-screen bg-neutral-bg pt-32 pb-20", i18n.language === 'ar' && "font-arabic")}>
@@ -84,32 +101,117 @@ const Exhibitors = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-12 flex flex-col md:flex-row gap-4">
-          <div className="flex-1 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-            <Search className="h-5 w-5 text-gray-400 ml-3" />
-            <input 
-              type="text" 
-              placeholder="Rechercher une entreprise par nom ou activité..."
-              className="flex-1 bg-transparent px-4 py-3 text-sm font-medium focus:outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }} className="px-6 py-3 bg-primary rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-secondary transition-all">
-              Rechercher
-            </button>
-          </div>
-          <div className="flex gap-4">
-            <select className="bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer">
-              <option>Tous les Secteurs</option>
-              {sectors.slice(1).map(s => <option key={s}>{s}</option>)}
-            </select>
+        {/* Search & Filters */}
+        <div className="mb-12">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 flex items-center bg-white p-2 rounded-2xl border border-gray-100 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+              <Search className="h-5 w-5 text-gray-400 ml-3" />
+              <input 
+                type="text" 
+                placeholder="Rechercher une entreprise par nom ou activité..."
+                className="flex-1 bg-transparent px-4 py-3 text-sm font-medium focus:outline-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button className="px-6 py-3 bg-primary rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-secondary transition-all">
+                Rechercher
+              </button>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+              <div className="relative">
+                <button
+                  onClick={() => setIsSectorOpen(!isSectorOpen)}
+                  onBlur={() => setTimeout(() => setIsSectorOpen(false), 200)}
+                  className="w-full sm:w-auto flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[260px] text-left"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{i18n.language === 'ar' ? 'القطاع' : 'Secteur d\'activité'}</span>
+                    <span className="text-xs font-black uppercase tracking-widest truncate">{activeSector === 'Tous' ? 'Tous les Secteurs' : activeSector}</span>
+                  </div>
+                  <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isSectorOpen && "rotate-180")} />
+                </button>
+                
+                {isSectorOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2">
+                       <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{i18n.language === 'ar' ? 'القطاعات' : 'Secteurs'}</span>
+                    </div>
+                    {sectors.map(s => (
+                      <button
+                        key={s}
+                        className={cn(
+                          "w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center justify-between group",
+                          activeSector === s ? "text-primary bg-primary/5" : "text-gray-600"
+                        )}
+                        onClick={() => {
+                          setActiveSector(s);
+                          setIsSectorOpen(false);
+                        }}
+                      >
+                        <span className={cn(activeSector === s ? "" : "group-hover:translate-x-1 transition-transform")}>{s === 'Tous' ? "Tous les secteurs" : s}</span>
+                        {activeSector === s && <Check className="w-4 h-4 text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsRegionOpen(!isRegionOpen)}
+                  onBlur={() => setTimeout(() => setIsRegionOpen(false), 200)}
+                  className="w-full sm:w-auto flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[200px] text-left"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{i18n.language === 'ar' ? 'الولاية' : 'Région'}</span>
+                    <span className="text-xs font-black uppercase tracking-widest truncate">{activeRegion === 'Toutes' ? 'Toutes les Régions' : activeRegion}</span>
+                  </div>
+                  <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isRegionOpen && "rotate-180")} />
+                </button>
+                
+                {isRegionOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2">
+                       <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{i18n.language === 'ar' ? 'الولايات' : 'Régions'}</span>
+                    </div>
+                    {regions.map(r => (
+                      <button
+                        key={r}
+                        className={cn(
+                          "w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center justify-between group",
+                          activeRegion === r ? "text-primary bg-primary/5" : "text-gray-600"
+                        )}
+                        onClick={() => {
+                          setActiveRegion(r);
+                          setIsRegionOpen(false);
+                        }}
+                      >
+                        <span className={cn(activeRegion === r ? "" : "group-hover:translate-x-1 transition-transform")}>{r === 'Toutes' ? "Toutes les régions" : r}</span>
+                        {activeRegion === r && <Check className="w-4 h-4 text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
+                className={cn(
+                  "flex items-center justify-center px-6 py-4 rounded-xl border shadow-sm text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer space-x-2 shrink-0",
+                  showVerifiedOnly ? "bg-secondary border-secondary text-white" : "bg-white border-gray-100 text-gray-500 hover:border-gray-300"
+                )}
+              >
+                <ShieldCheck className={cn("h-4 w-4", showVerifiedOnly ? "text-white" : "text-gray-400")} />
+                <span>Vérifiés</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {exhibitors.map((exhibitor, idx) => (
+          {filteredExhibitors.map((exhibitor, idx) => (
             <motion.div 
               key={exhibitor.id}
               initial={{ opacity: 0, y: 20 }}
