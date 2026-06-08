@@ -9,17 +9,13 @@ const TopBar = () => {
   const [lang, setLang] = useState("FR");
   const [showLangMenu, setShowLangMenu] = useState(false);
   const { t, i18n } = useTranslation();
-  const { currency, setCurrency } = useCurrency();
   const [showLang, setShowLang] = useState(false);
-  const [showCurrency, setShowCurrency] = useState(false);
 
   const languages = [
     { code: 'fr', name: 'Français', flag: 'https://flagcdn.com/w20/fr.png' },
     { code: 'en', name: 'English', flag: 'https://flagcdn.com/w20/gb.png' },
     { code: 'ar', name: 'العربية', flag: 'https://flagcdn.com/w20/dz.png' }
   ];
-
-  const currencies = ['DZD', 'EUR', 'USD'];
 
   const currentLang = languages.find(l => i18n.language?.startsWith(l.code)) || languages[0];
 
@@ -28,10 +24,13 @@ const TopBar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end items-center text-[11px] font-bold uppercase tracking-wider">
         <div className="flex items-center space-x-6">
           {/* Language Selector */}
-          <div className="relative">
+          <div 
+            className="relative py-2"
+            onMouseLeave={() => setShowLang(false)}
+          >
             <button 
-              onClick={() => { setShowLang(!showLang); setShowCurrency(false); }}
-              className="flex items-center space-x-1.5 hover:text-secondary transition-colors group"
+              onClick={() => setShowLang(!showLang)}
+              className="flex items-center space-x-1.5 hover:text-secondary transition-colors group cursor-pointer"
             >
               <img src={currentLang.flag} alt={currentLang.code} className="w-4 h-auto rounded-sm" />
               <span>{currentLang.name}</span>
@@ -70,38 +69,6 @@ const TopBar = () => {
             <span className="text-white">{t('topbar.my_account')}</span>
             <span className="text-white font-black tracking-tighter">ALGERIA INDUSTRY</span>
           </button>
-
-          {/* Currency */}
-          <div className="relative">
-            <button 
-              onClick={() => { setShowCurrency(!showCurrency); setShowLang(false); }}
-              className="flex items-center space-x-1.5 hover:text-secondary transition-colors group"
-            >
-              <span>{currency} - {currency === 'DZD' ? 'DA' : currency === 'EUR' ? '€' : '$'}</span>
-              <ChevronDown className="h-3 w-3 text-gray-500 group-hover:text-secondary" />
-            </button>
-
-            <AnimatePresence>
-              {showCurrency && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  className="absolute top-full left-0 mt-1 bg-[#333] border border-white/10 shadow-xl min-w-[100px]"
-                >
-                  {currencies.map(curr => (
-                    <button
-                      key={curr}
-                      onClick={() => { setCurrency(curr as any); setShowCurrency(false); }}
-                      className="w-full px-3 py-2 hover:bg-white/5 text-left transition-colors"
-                    >
-                      {curr}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
           {/* Become Exhibitor Button */}
           <Link to="/become-exhibitor" className="border border-white/40 px-3 py-1 rounded hover:bg-white hover:text-black transition-all text-[10px]">

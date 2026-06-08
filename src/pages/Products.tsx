@@ -8,10 +8,11 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Star,
-  Zap
+  Zap,
+  Check
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/Skeleton';
@@ -24,8 +25,46 @@ const Products = () => {
   const { i18n } = useTranslation();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [activeCategory, setActiveCategory] = useState('Tous');
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('Toutes les régions');
+  const [selectedRegion, setSelectedRegion] = useState('Toutes les wilayas');
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setIsRegionOpen(false);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio < 1) {
+          if (entry.target === categoryRef.current) setIsCategoryOpen(false);
+          if (entry.target === regionRef.current) setIsRegionOpen(false);
+        }
+      });
+    }, { threshold: 1 });
+
+    const currentCategoryRef = categoryRef.current;
+    const currentRegionRef = regionRef.current;
+
+    if (currentCategoryRef) observer.observe(currentCategoryRef);
+    if (currentRegionRef) observer.observe(currentRegionRef);
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      observer.disconnect();
+    };
+  }, []);
 
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -36,7 +75,7 @@ const Products = () => {
   const [error, setError] = useState('');
 
   const categories = ['Tous', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
-  const regionsList = ["Toutes les régions", ...Array.from(new Set(products.map(p => p.region).filter(Boolean)))];
+  const regionsList = ["Toutes les wilayas", ...Array.from(new Set(products.map(p => p.region).filter(Boolean)))];
 
   const fetchFavorites = async () => {
     if (!isAuthenticated) return;
@@ -168,7 +207,7 @@ const Products = () => {
 
   const filteredProducts = products.filter(product => {
      if (activeCategory !== 'Tous' && product.category !== activeCategory) return false;
-     if (selectedRegion !== 'Toutes les régions' && product.region !== selectedRegion) return false;
+     if (selectedRegion !== 'Toutes les wilayas' && product.region !== selectedRegion) return false;
      if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return product.name?.toLowerCase().includes(query) ||
@@ -245,36 +284,68 @@ const Products = () => {
               </div>
               
               <div className="space-y-6">
-                <div>
+                <div className="relative" ref={categoryRef}>
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Catégorie</label>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map(cat => (
-                      <button 
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={cn(
-                          "px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all",
-                          activeCategory === cat ? "bg-primary text-white" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                        )}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    className="w-full flex items-center justify-between bg-gray-50 px-5 py-3 rounded-xl border border-transparent focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all cursor-pointer text-gray-800 hover:bg-gray-100 text-left"
+                  >
+                    <span className="text-xs font-black uppercase tracking-widest truncate">{activeCategory === 'Tous' ? 'Toutes les catégories' : activeCategory}</span>
+                    <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isCategoryOpen && "rotate-180")} />
+                  </button>
+                  
+                  {isCategoryOpen && (
+                    <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 max-h-64 overflow-y-auto overflow-x-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
+                      {categories.map(c => (
+                        <button
+                          key={c}
+                          className={cn(
+                            "w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center justify-between group",
+                            activeCategory === c ? "text-primary bg-primary/5" : "text-gray-600"
+                          )}
+                          onClick={() => {
+                            setActiveCategory(c);
+                            setIsCategoryOpen(false);
+                          }}
+                        >
+                          <span className={cn(activeCategory === c ? "" : "group-hover:translate-x-1 transition-transform")}>{c === 'Tous' ? "Toutes les catégories" : c}</span>
+                          {activeCategory === c && <Check className="w-4 h-4 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Région</label>
-                  <select 
-                    value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
-                    className="w-full bg-gray-50 border-none p-3 rounded-xl text-xs font-bold text-gray-600 outline-none focus:ring-2 focus:ring-secondary/20"
+                <div className="relative" ref={regionRef}>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Wilaya</label>
+                  <button
+                    onClick={() => setIsRegionOpen(!isRegionOpen)}
+                    className="w-full flex items-center justify-between bg-gray-50 px-5 py-3 rounded-xl border border-transparent focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all cursor-pointer text-gray-800 hover:bg-gray-100 text-left"
                   >
-                    <option value="Toutes les régions">Toutes les régions</option>
-                    {regionsList.slice(1).map(r => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
+                    <span className="text-xs font-black uppercase tracking-widest truncate">{selectedRegion === 'Toutes les wilayas' ? 'Toutes les wilayas' : selectedRegion}</span>
+                    <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isRegionOpen && "rotate-180")} />
+                  </button>
+                  
+                  {isRegionOpen && (
+                    <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 max-h-64 overflow-y-auto overflow-x-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
+                      {regionsList.map(r => (
+                        <button
+                          key={r}
+                          className={cn(
+                            "w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center justify-between group",
+                            selectedRegion === r ? "text-primary bg-primary/5" : "text-gray-600"
+                          )}
+                          onClick={() => {
+                            setSelectedRegion(r);
+                            setIsRegionOpen(false);
+                          }}
+                        >
+                          <span className={cn(selectedRegion === r ? "" : "group-hover:translate-x-1 transition-transform")}>{r === 'Toutes les wilayas' ? "Toutes les wilayas" : r}</span>
+                          {selectedRegion === r && <Check className="w-4 h-4 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>

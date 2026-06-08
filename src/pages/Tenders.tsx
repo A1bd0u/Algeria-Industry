@@ -1,6 +1,6 @@
-import { AlertCircle, ArrowLeft, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Globe, Lock, Package, Plus, Search, Send, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Building2, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Globe, Lock, Package, Plus, Search, Send, ShieldCheck, ChevronDown, Check } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -27,6 +27,7 @@ const Tenders = () => {
   const [view, setView] = useState<'list' | 'create'>('list');
   const [selectedType, setSelectedType] = useState('Tous');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [tenders, setTenders] = useState<Tender[]>([]);
@@ -34,6 +35,34 @@ const Tenders = () => {
   const tenderCategories = [
     'Tous', 'Énergie', 'Mécanique', 'BTP', 'Agroalimentaire', 'Services'
   ];
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio < 1) {
+          if (entry.target === categoryRef.current) setIsCategoryOpen(false);
+        }
+      });
+    }, { threshold: 1 });
+
+    const currentCategoryRef = categoryRef.current;
+    if (currentCategoryRef) observer.observe(currentCategoryRef);
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      observer.disconnect();
+    };
+  }, []);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -192,7 +221,7 @@ const Tenders = () => {
                     onClick={() => setSelectedType(type)}
                     className={cn(
                       "px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all",
-                      selectedType === type ? "bg-white text-primary shadow-sm" : "text-gray-500 hover:text-primary"
+                      selectedType === type ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-primary"
                     )}
                   >
                     {type}
@@ -215,15 +244,36 @@ const Tenders = () => {
                   </button>
                 </div>
                 
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all uppercase tracking-wider cursor-pointer"
-                >
-                  {tenderCategories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <div className="relative shrink-0" ref={categoryRef}>
+                  <button
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    className="w-full sm:w-auto flex items-center justify-between bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[240px] text-left"
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider truncate">{selectedCategory === 'Tous' ? 'Toutes les catégories' : selectedCategory}</span>
+                    <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isCategoryOpen && "rotate-180")} />
+                  </button>
+                  
+                  {isCategoryOpen && (
+                    <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 max-h-64 overflow-y-auto overflow-x-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
+                      {tenderCategories.map(cat => (
+                        <button
+                          key={cat}
+                          className={cn(
+                            "w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center justify-between group",
+                            selectedCategory === cat ? "text-primary bg-primary/5" : "text-gray-600"
+                          )}
+                          onClick={() => {
+                            setSelectedCategory(cat);
+                            setIsCategoryOpen(false);
+                          }}
+                        >
+                          <span className={cn(selectedCategory === cat ? "" : "group-hover:translate-x-1 transition-transform")}>{cat === 'Tous' ? "Toutes les catégories" : cat}</span>
+                          {selectedCategory === cat && <Check className="w-4 h-4 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

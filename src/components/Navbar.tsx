@@ -16,7 +16,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showMegaMenu, setShowMegaMenu] = useState(false);
   const [showLang, setShowLang] = useState(false);
-  const [showCurrency, setShowCurrency] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
@@ -46,7 +45,6 @@ const Navbar = () => {
     { code: 'ar', name: 'العربية', flag: 'https://flagcdn.com/w20/dz.png' }
   ];
 
-  const currencies = ['DZD', 'EUR', 'USD'];
   const currentLang = languages.find(l => i18n.language?.startsWith(l.code)) || languages[0];
 
   const navItems = [
@@ -185,10 +183,13 @@ const Navbar = () => {
 
             <div className="flex items-center space-x-2 ml-1 pl-1 border-l border-white/5 shrink-0">
               {/* Language Selector */}
-              <div className="relative group/lang">
+              <div 
+                className="relative group/lang py-2"
+                onMouseLeave={() => setShowLang(false)}
+              >
                 <button 
-                  onClick={() => { setShowLang(!showLang); setShowCurrency(false); }}
-                  className="flex items-center space-x-2 transition-all text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white"
+                  onClick={() => setShowLang(!showLang)}
+                  className="flex items-center space-x-2 transition-all text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white cursor-pointer"
                 >
                   <img src={currentLang.flag} alt={currentLang.code} className="w-4 h-auto rounded-[2px] opacity-60 group-hover/lang:opacity-100 transition-opacity" />
                   <span className="text-[9px] hidden xl:inline">{currentLang.name.substring(0, 3)}</span>
@@ -201,7 +202,7 @@ const Navbar = () => {
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 5 }}
-                      className="absolute top-full right-0 mt-3 bg-[#222] border border-white/10 shadow-2xl min-w-[140px] rounded-xl overflow-hidden z-[60]"
+                      className="absolute top-full right-0 mt-1 bg-[#222] border border-white/10 shadow-2xl min-w-[140px] rounded-xl overflow-hidden z-[60]"
                     >
                       {languages.map(lang => (
                         <button
@@ -217,41 +218,6 @@ const Navbar = () => {
                         >
                           <img src={lang.flag} alt={lang.code} className="w-4 h-auto rounded-sm" />
                           <span>{lang.name}</span>
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Currency */}
-              <div className="relative group/curr">
-                <button 
-                  onClick={() => { setShowCurrency(!showCurrency); setShowLang(false); }}
-                  className="flex items-center space-x-1 transition-all text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white"
-                >
-                  <span>{currency}</span>
-                  <ChevronDown className={cn("h-3 w-3 text-secondary/40 group-hover/curr:text-secondary transition-all", showCurrency && "rotate-180")} />
-                </button>
-
-                <AnimatePresence>
-                  {showCurrency && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      className="absolute top-full right-0 mt-3 bg-[#222] border border-white/10 shadow-2xl min-w-[100px] rounded-xl overflow-hidden z-[60]"
-                    >
-                      {currencies.map(curr => (
-                        <button
-                          key={curr}
-                          onClick={() => { setCurrency(curr as any); setShowCurrency(false); }}
-                          className={cn(
-                            "w-full px-4 py-3 hover:bg-white/5 text-[9px] font-bold uppercase text-left transition-colors",
-                            currency === curr ? "text-secondary bg-white/5" : "text-white/60"
-                          )}
-                        >
-                          {curr}
                         </button>
                       ))}
                     </motion.div>

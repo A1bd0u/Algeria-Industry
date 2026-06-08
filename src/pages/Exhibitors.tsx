@@ -35,12 +35,12 @@ const Exhibitors = () => {
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (!entry.isIntersecting) {
+        if (entry.intersectionRatio < 1) {
           if (entry.target === sectorRef.current) setIsSectorOpen(false);
           if (entry.target === regionRef.current) setIsRegionOpen(false);
         }
       });
-    }, { threshold: 0 });
+    }, { threshold: 1 });
 
     const currentSectorRef = sectorRef.current;
     const currentRegionRef = regionRef.current;
@@ -198,8 +198,8 @@ const Exhibitors = () => {
                   className="w-full sm:w-auto flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-gray-800 hover:border-gray-300 min-w-[200px] text-left"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{i18n.language === 'ar' ? 'الولاية' : 'Région'}</span>
-                    <span className="text-xs font-black uppercase tracking-widest truncate">{activeRegion === 'Toutes' ? 'Toutes les Régions' : activeRegion}</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{i18n.language === 'ar' ? 'الولاية' : 'Wilaya'}</span>
+                    <span className="text-xs font-black uppercase tracking-widest truncate">{activeRegion === 'Toutes' ? 'Toutes les Wilayas' : activeRegion}</span>
                   </div>
                   <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform ml-4 shrink-0", isRegionOpen && "rotate-180")} />
                 </button>
@@ -207,7 +207,7 @@ const Exhibitors = () => {
                 {isRegionOpen && (
                   <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden transform origin-top animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-4 py-2">
-                       <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{i18n.language === 'ar' ? 'الولايات' : 'Régions'}</span>
+                       <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{i18n.language === 'ar' ? 'الولايات' : 'Wilayas'}</span>
                     </div>
                     {regions.map(r => (
                       <button
@@ -221,7 +221,7 @@ const Exhibitors = () => {
                           setIsRegionOpen(false);
                         }}
                       >
-                        <span className={cn(activeRegion === r ? "" : "group-hover:translate-x-1 transition-transform")}>{r === 'Toutes' ? "Toutes les régions" : r}</span>
+                        <span className={cn(activeRegion === r ? "" : "group-hover:translate-x-1 transition-transform")}>{r === 'Toutes' ? "Toutes les wilayas" : r}</span>
                         {activeRegion === r && <Check className="w-4 h-4 text-primary" />}
                       </button>
                     ))}
