@@ -3,7 +3,7 @@ import {
   Layout,
   MapPin,
   MessageSquare,
-  Search, ShieldCheck, Star, ChevronDown, Check
+  Search, ShieldCheck, Star, ChevronDown, Check, ArrowRight
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
@@ -304,9 +304,9 @@ const Exhibitors = () => {
               </div>
 
               <div className="flex gap-3">
-                <Link to={`/directory/${exhibitor.id}`} className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20">
-                  <Layout className="h-4 w-4" />
-                  <span>Visiter le Stand</span>
+                <Link to={`/directory/${exhibitor.id}`} className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20 group">
+                  <span>Visiter</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link to="/contact" className="w-14 h-14 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:text-secondary hover:bg-secondary/5 transition-all">
                   <MessageSquare className="h-5 w-5" />

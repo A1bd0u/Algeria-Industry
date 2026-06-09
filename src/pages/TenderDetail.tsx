@@ -204,15 +204,19 @@ const TenderDetail = () => {
                   </div>
                </div>
                
-               <div className="bg-white/5 p-8 border border-white/10 rounded-none shrink-0 min-w-[300px]">
-                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4">Urgence & Statut</p>
-                  <div className="space-y-4">
+               <div className="bg-gradient-to-br from-white/10 to-transparent p-8 border border-white/20 rounded-2xl shrink-0 min-w-[300px] backdrop-blur-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl" />
+                  <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-6 flex items-center">
+                     <span className="w-2 h-2 bg-secondary animate-pulse rounded-full mr-2" />
+                     Statut de l'offre
+                  </p>
+                  <div className="space-y-4 relative z-10">
                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white/60">Temps restant</span>
-                        <span className="text-lg font-black text-secondary uppercase font-mono">12 JOURS</span>
+                        <span className="text-xs font-bold text-white/80">Date de clôture</span>
+                        <span className="text-xl font-black text-white uppercase font-mono tracking-tighter">12 JOURS</span>
                      </div>
-                     <div className="h-2 w-full bg-white/5 overflow-hidden">
-                        <div className="h-full bg-secondary w-2/3" />
+                     <div className="h-1.5 w-full bg-white/10 overflow-hidden rounded-full">
+                        <div className="h-full bg-gradient-to-r from-secondary/50 to-secondary w-2/3 rounded-full" />
                      </div>
                   </div>
                </div>
