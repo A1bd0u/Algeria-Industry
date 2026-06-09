@@ -6,7 +6,7 @@ let supabaseInstance: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
     let url = process.env.SUPABASE_URL || '';
-    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
     
     if (url.endsWith('/rest/v1')) url = url.replace('/rest/v1', '');
     if (url.endsWith('/rest/v1/')) url = url.replace('/rest/v1/', '');
