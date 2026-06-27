@@ -49,6 +49,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ComparisonProvider } from './context/ComparisonContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { TrackingProvider } from './context/TrackingContext';
+import VerifyAccountModal from './components/VerifyAccountModal';
 
 // Create a client for React Query (API data management)
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ export default function App() {
         <TrackingProvider>
           <CurrencyProvider>
             <ComparisonProvider>
+              <VerifyAccountModal />
               <ScrollToTop />
               <div className="flex flex-col min-h-screen">
               {!isExtranet && <Navbar />}

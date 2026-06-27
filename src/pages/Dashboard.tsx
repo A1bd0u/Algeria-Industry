@@ -423,6 +423,22 @@ const Dashboard = () => {
     phone: '+213 21 00 00 00'
   });
   const [chartTimeframe, setChartTimeframe] = useState<'6m' | '1y'>('6m');
+  const [apiStats, setApiStats] = useState<any>(null);
+
+  useEffect(() => {
+     const fetchStats = async () => {
+         try {
+            const res = await fetch(`/api/stats/dashboard?timeframe=${chartTimeframe}`);
+            if (res.ok) {
+                const data = await res.json();
+                setApiStats(data);
+            }
+         } catch(e) {
+            console.error('Stats fetch error:', e);
+         }
+     };
+     if (isAuthenticated) fetchStats();
+  }, [isAuthenticated, chartTimeframe]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -449,15 +465,15 @@ const Dashboard = () => {
     switch(activeTab) {
       case 'overview':
         const stats = user.role === 'fournisseur' ? [
-          { label: 'Vues du profil', value: '1,284', trend: '+12%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Demandes reçues', value: '12', trend: '+5%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
-          { label: 'Produits actifs', value: '24', trend: 'Stable', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Publicités', value: apiStats?.metrics?.ads || 0, trend: '+12%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Demandes (Devis)', value: apiStats?.metrics?.rfqs || 0, trend: '+5%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
+          { label: 'Produits actifs', value: apiStats?.metrics?.items || 0, trend: 'Stable', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Score visibilité', value: '92%', trend: '+2%', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
         ] : [
-          { label: 'AO lancés', value: '8', trend: '+2', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Offres reçues', value: '42', trend: '+15%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
+          { label: 'AO lancés', value: apiStats?.metrics?.items || 0, trend: '+2', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Devis Reçus', value: apiStats?.metrics?.rfqs || 0, trend: '+15%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
           { label: 'Économies est.', value: '1.2M DZD', trend: '8%', icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'Fournisseurs cont.', value: '15', trend: 'Stable', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+          { label: 'Messages', value: apiStats?.metrics?.messages || 0, trend: 'Stable', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
         ];
 
         return (
@@ -513,7 +529,7 @@ const Dashboard = () => {
                 </div>
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={user.role === 'fournisseur' ? (chartTimeframe === '1y' ? dataFournisseur1y : dataFournisseur) : (chartTimeframe === '1y' ? dataAcheteur1y : dataAcheteur)}>
+                    <AreaChart data={apiStats?.chartData || (user.role === 'fournisseur' ? (chartTimeframe === '1y' ? dataFournisseur1y : dataFournisseur) : (chartTimeframe === '1y' ? dataAcheteur1y : dataAcheteur))}>
                       <defs>
                         <linearGradient id="colorMain" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={user.role === 'fournisseur' ? "#1B4D2E" : "#d97706"} stopOpacity={0.1}/>

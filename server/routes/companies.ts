@@ -1,6 +1,7 @@
 import express from 'express';
 import { getSupabase } from '../db/supabaseClient';
 import { generateReferenceId } from '../utils/reference';
+import { requireAuth } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -104,6 +105,73 @@ router.post('/', async (req, res) => {
   } catch (err: any) {
     // Supabase Error
     return res.status(500).json({ error: "Erreur lors de la sauvegarde de l'entreprise." });
+  }
+});
+
+// PUT /api/companies/:id - Mettre à jour une entreprise spécifique
+router.put('/:id', requireAuth, async (req, res) => {
+  const { name, nif, rc, description, activity_sector } = req.body;
+  const user = (req as any).user;
+
+  try {
+    const supabase = getSupabase();
+    
+    const { data: existing, error: checkError } = await supabase
+      .from('companies')
+      .select('owner_id')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (!existing) return res.status(404).json({ error: "Entreprise non trouvée" });
+    if (existing.owner_id !== user.id && user.role !== 'admin') {
+      return res.status(403).json({ error: "Non autorisé à modifier cette entreprise" });
+    }
+
+    const { data, error } = await supabase
+      .from('companies')
+      .update({ name, nif, rc, description, activity_sector })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    return res.json(data);
+  } catch (err: any) {
+    console.error("Supabase Error PUT /companies/:id:", err);
+    return res.status(500).json({ error: "Erreur lors de la modification de l'entreprise." });
+  }
+});
+
+// DELETE /api/companies/:id - Supprimer une entreprise spécifique
+router.delete('/:id', requireAuth, async (req, res) => {
+  const user = (req as any).user;
+
+  try {
+    const supabase = getSupabase();
+    
+    const { data: existing, error: checkError } = await supabase
+      .from('companies')
+      .select('owner_id')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (!existing) return res.status(404).json({ error: "Entreprise non trouvée" });
+    if (existing.owner_id !== user.id && user.role !== 'admin') {
+      return res.status(403).json({ error: "Non autorisé à supprimer cette entreprise" });
+    }
+
+    const { error } = await supabase
+      .from('companies')
+      .delete()
+      .eq('id', req.params.id);
+      
+    if (error) throw error;
+    return res.json({ success: true, message: "Entreprise supprimée" });
+  } catch (err: any) {
+    console.error("Supabase Error DELETE /companies/:id:", err);
+    return res.status(500).json({ error: "Erreur lors de la suppression de l'entreprise." });
   }
 });
 

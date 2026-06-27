@@ -18,6 +18,7 @@ import kycRoutes from './server/routes/kyc';
 import favoriteRoutes from './server/routes/favorites';
 import adRoutes from './server/routes/ads';
 import uploadRoutes from './server/routes/upload';
+import statsRoutes from './server/routes/stats';
 
 async function startServer() {
   const app = express();
@@ -59,6 +60,7 @@ async function startServer() {
   app.use('/api/favorites', favoriteRoutes);
   app.use('/api/ads', adRoutes);
   app.use('/api/upload', uploadRoutes);
+  app.use('/api/stats', statsRoutes);
 
   // Serve uploaded files statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

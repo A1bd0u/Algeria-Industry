@@ -7,6 +7,9 @@ import { generateReferenceId } from '../utils/reference';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'algiers_industry_super_secure_secret_2026';
 
+const emailVerifications = new Map<string, boolean>();
+const verificationCodes = new Map<string, string>();
+
 // API - Auth - Get Current User
 router.get('/me', async (req, res) => {
   const token = req.cookies.token;
@@ -37,6 +40,7 @@ router.get('/me', async (req, res) => {
         }
         
         foundUser.companyStatus = cStatus;
+        foundUser.emailVerified = emailVerifications.has(foundUser.email) ? emailVerifications.get(foundUser.email) : true;
         delete foundUser.companies; // optional cleanup
         return res.json({ user: foundUser });
       }
@@ -91,7 +95,8 @@ router.post('/login', async (req, res) => {
       email: user.email,
       company: user.company,
       role: user.role,
-      isVerified: Boolean(user.isVerified)
+      isVerified: Boolean(user.isVerified),
+      emailVerified: emailVerifications.has(user.email) ? emailVerifications.get(user.email) : true
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '72h' });
@@ -193,13 +198,19 @@ router.post('/register', async (req, res) => {
       }
     }
 
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    verificationCodes.set(email, code);
+    emailVerifications.set(email, false);
+    console.log(`[AUTH] Code de vérification pour ${email} : ${code}`);
+
     const payload = {
         id: newUserRow.id,
         name: newUserRow.name,
         email: newUserRow.email,
         company: newUserRow.company,
         role: newUserRow.role,
-        isVerified: false
+        isVerified: false,
+        emailVerified: false
     };
 
     const token = jwt.sign(
@@ -381,6 +392,57 @@ router.get(['/oauth/callback/:provider', '/oauth/callback/:provider/'], async (r
   } catch (err) {
     res.status(500).send('Erreur lors de l\'authentification OAuth');
   }
+});
+
+// API - Auth - Verify Code
+router.post('/verify-code', async (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ error: 'Email et code requis' });
+  }
+
+  const expectedCode = verificationCodes.get(email);
+  if (expectedCode && expectedCode === code.toString()) {
+    emailVerifications.set(email, true);
+    verificationCodes.delete(email);
+
+    // Mettre à jour le JWT avec emailVerified = true s'il y a un token existant
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET) as any;
+            delete decoded.iat;
+            delete decoded.exp;
+            decoded.emailVerified = true;
+            const newToken = jwt.sign(decoded, JWT_SECRET, { expiresIn: '72h' });
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                maxAge: 72 * 60 * 60 * 1000
+            });
+        } catch (e) {
+            console.error("Erreur mise à jour token:", e);
+        }
+    }
+
+    return res.json({ success: true });
+  }
+
+  return res.status(400).json({ error: 'Code invalide ou expiré' });
+});
+
+// API - Auth - Resend Code
+router.post('/resend-code', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email requis' });
+  }
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  verificationCodes.set(email, code);
+  emailVerifications.set(email, false);
+  console.log(`[AUTH] Code de vérification renvoyé pour ${email} : ${code}`);
+  return res.json({ success: true, message: 'Code envoyé' });
 });
 
 export default router;

@@ -409,7 +409,7 @@ const Navbar = () => {
                     ))}
                  </div>
                  <div className="flex space-x-2">
-                    {currencies.map(curr => (
+                    {['DZD', 'EUR', 'USD'].map(curr => (
                       <button
                         key={curr}
                         onClick={() => { setCurrency(curr as any); setIsOpen(false); }}

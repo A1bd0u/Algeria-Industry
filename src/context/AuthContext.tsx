@@ -7,6 +7,7 @@ export interface User {
   company: string;
   role: 'acheteur' | 'fournisseur' | 'admin' | 'exposant';
   isVerified: boolean;
+  emailVerified?: boolean;
   companyStatus?: string;
 }
 
@@ -16,6 +17,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (userData: Partial<User> & { password?: string }) => Promise<void>;
   logout: () => Promise<void>;
+  verifyCode: (email: string, code: string) => Promise<void>;
+  resendCode: (email: string) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -109,6 +112,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const verifyCode = async (email: string, code: string) => {
+    const res = await fetch('/api/auth/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Code invalide.');
+    }
+    // Update local user state immediately
+    if (user && user.email === email) {
+      setUser({ ...user, emailVerified: true });
+    }
+  };
+
+  const resendCode = async (email: string) => {
+    const res = await fetch('/api/auth/resend-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) {
+      throw new Error("Erreur lors de l'envoi du code.");
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -124,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, verifyCode, resendCode, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
