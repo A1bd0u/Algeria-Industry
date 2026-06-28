@@ -69,13 +69,18 @@ const ConsolePro = () => {
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   const [products, setProducts] = useState<any[]>([]);
+  const [ads, setAds] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
+        const [resProducts, resAds] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/ads')
+        ]);
+        
+        if (resProducts.ok) {
+          const data = await resProducts.json();
           // Map backend data to match ConsolePro expectations
           const mapped = data.map((p: any) => ({
              id: p.id,
@@ -89,11 +94,16 @@ const ConsolePro = () => {
           }));
           setProducts(mapped);
         }
+        
+        if (resAds.ok) {
+           const adsData = await resAds.json();
+           setAds(adsData);
+        }
       } catch (e) {
         console.error(e);
       }
     };
-    loadProducts();
+    loadData();
   }, []);
 
   const [productSearch, setProductSearch] = useState('');
@@ -134,6 +144,20 @@ const ConsolePro = () => {
   const handleRejectProduct = (id: number) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'Rejeté' } : p));
     showNotify("Produit rejeté", "error");
+  };
+
+  const handleApproveAd = async (id: string) => {
+    // Optimistic update for UI
+    setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'Actif' } : ad));
+    showNotify("Publicité approuvée et programmée", "success");
+    // Ideally this would make an API call to update the status in the DB
+  };
+
+  const handleRejectAd = async (id: string) => {
+    // Optimistic update for UI
+    setAds(prev => prev.map(ad => ad.id === id ? { ...ad, status: 'Rejetée' } : ad));
+    showNotify("Demande de publicité refusée", "error");
+    // Ideally this would make an API call to update the status in the DB
   };
 
   const handleAddCategory = () => {
@@ -475,26 +499,48 @@ const ConsolePro = () => {
                 <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
                   <h4 className="font-bold text-primary mb-6">Demandes en attente</h4>
                   <div className="space-y-4">
-                    <div className="p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
-                       <div>
-                         <p className="font-bold text-gray-900">Tech Industry SARL</p>
-                         <p className="text-xs text-gray-500 mt-1">Espace: Page d'accueil (Bannière Haut)</p>
-                       </div>
-                       <div className="flex space-x-2">
-                          <button onClick={() => showNotify("Publicité approuvée et programmée", "success")} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors">Approuver</button>
-                          <button onClick={() => showNotify("Demande de publicité refusée", "error")} className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Refuser</button>
-                       </div>
-                    </div>
+                    {ads.filter((a: any) => a.status === 'en_attente').length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">Aucune demande en attente.</p>
+                    ) : (
+                      ads.filter((a: any) => a.status === 'en_attente').map((ad: any) => (
+                        <div key={ad.id} className="p-4 border border-gray-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                           <div>
+                             <p className="font-bold text-gray-900">{ad.title}</p>
+                             <p className="text-xs text-gray-500 mt-1">Objectif: {ad.objective || 'Non spécifié'} • Durée: {ad.duration || 'Non spécifiée'}</p>
+                           </div>
+                           <div className="flex space-x-2 shrink-0">
+                              <button onClick={() => handleApproveAd(ad.id)} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors">Approuver</button>
+                              <button onClick={() => handleRejectAd(ad.id)} className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Refuser</button>
+                           </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
                 <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
                   <h4 className="font-bold text-primary mb-6">Campagnes Actives</h4>
-                   <div className="bg-gray-50 p-8 text-center rounded-3xl border border-dashed border-gray-200">
-                     <Zap className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                     <p className="font-bold text-gray-900">Aucune campagne active</p>
-                     <p className="text-xs text-gray-500 mt-1">Les campagnes approuvées apparaîtront ici.</p>
-                   </div>
+                   {ads.filter((a: any) => ['Actif', 'published', 'approuvée', 'Approuvé'].includes(a.status)).length === 0 ? (
+                     <div className="bg-gray-50 p-8 text-center rounded-3xl border border-dashed border-gray-200">
+                       <Zap className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+                       <p className="font-bold text-gray-900">Aucune campagne active</p>
+                       <p className="text-xs text-gray-500 mt-1">Les campagnes approuvées apparaîtront ici.</p>
+                     </div>
+                   ) : (
+                     <div className="space-y-4">
+                       {ads.filter((a: any) => ['Actif', 'published', 'approuvée', 'Approuvé'].includes(a.status)).map((ad: any) => (
+                         <div key={ad.id} className="p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
+                            <div>
+                              <p className="font-bold text-gray-900">{ad.title}</p>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <span className="bg-emerald-50 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Actif</span>
+                                <span className="text-xs text-gray-500">Objectif: {ad.objective || 'N/A'}</span>
+                              </div>
+                            </div>
+                         </div>
+                       ))}
+                     </div>
+                   )}
                 </div>
               </div>
 

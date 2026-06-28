@@ -48,6 +48,7 @@ const Footer = () => {
               <li><Link to="/compare" className={cn("hover:text-secondary transition-colors flex items-center space-x-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}><span>{i18n.language === 'ar' ? '<' : '>'}</span> <span>{i18n.language === 'ar' ? 'مقارنة الحلول' : 'Comparer Solutions'}</span></Link></li>
               <li><Link to="/rfq" className={cn("hover:text-secondary transition-colors flex items-center space-x-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}><span>{i18n.language === 'ar' ? '<' : '>'}</span> <span>{i18n.language === 'ar' ? 'طلب اقتباس' : 'Request RFQ'}</span></Link></li>
               <li><Link to="/become-exhibitor" className={cn("text-secondary hover:text-white transition-colors flex items-center space-x-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}><span>{i18n.language === 'ar' ? '<' : '>'}</span> <span>{t('topbar.become_exhibitor')}</span></Link></li>
+              <li><Link to="/ads-request" className={cn("text-secondary hover:text-white transition-colors flex items-center space-x-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}><span>{i18n.language === 'ar' ? '<' : '>'}</span> <span>{i18n.language === 'ar' ? 'مساحة إعلانية' : 'Espace Pub'}</span></Link></li>
               <li className="pt-4 mt-4 border-t border-white/10"><Link to="/extranet" className="text-[10px] text-gray-500 font-bold uppercase tracking-widest hover:text-white transition-all">{t('nav.console_pro')}</Link></li>
             </ul>
           </div>

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -98,7 +98,7 @@ const SearchResults = () => {
                   {results.products.map((product) => (
                     <Link 
                       key={product.id} 
-                      to={`/products/${product.id}`}
+                      to={`/products/${generateSlugUrl(product.name, String(product.id))}`}
                       className="bg-white group border border-gray-100 hover:border-secondary transition-all flex flex-col sm:flex-row"
                     >
                       <div className="w-full sm:w-48 aspect-[4/3] sm:aspect-square overflow-hidden bg-gray-50 shrink-0">
@@ -133,7 +133,7 @@ const SearchResults = () => {
                   {results.companies.map((company) => (
                     <Link 
                       key={company.id} 
-                      to={`/directory/${company.id}`}
+                      to={`/directory/${generateSlugUrl(company.name, company.id)}`}
                       className="bg-white p-6 border border-gray-100 hover:border-secondary transition-all flex items-center justify-between group"
                     >
                       <div className="flex items-center space-x-6">

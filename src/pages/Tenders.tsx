@@ -21,7 +21,7 @@ import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
-import { cn } from "../lib/utils";
+import { cn, generateSlugUrl } from "../lib/utils";
 
 import AdSpace from "../components/AdSpace";
 import { TenderSkeleton } from "../components/Skeleton";
@@ -435,7 +435,7 @@ const Tenders = () => {
                         transition={{ delay: index * 0.1 }}
                       >
                         <Link
-                          to={`/tenders/${tender.id}`}
+                          to={`/tenders/${generateSlugUrl(tender.title, tender.id)}`}
                           className="block bg-white p-8 rounded-none border border-gray-200 shadow-sm hover:shadow-xl transition-all group"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">

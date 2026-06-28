@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 // No mock data needed anymore, using API
 
 import AdSpace from '../components/AdSpace';
+import { generateSlugUrl } from '../lib/utils';
 import { CompanySkeleton } from '../components/Skeleton';
 
 const Directory = () => {
@@ -358,7 +359,7 @@ const Directory = () => {
                             </div>
                             <div className={cn("flex items-end justify-end", i18n.language === 'ar' && "justify-start")}>
                               <Link 
-                                to={`/directory/${company.id}`}
+                                to={`/directory/${generateSlugUrl(company.name, company.id)}`}
                                 className={cn("btn-primary py-2 px-4 flex items-center space-x-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}
                               >
                                 <span>{t('directory.tech_sheet')}</span>

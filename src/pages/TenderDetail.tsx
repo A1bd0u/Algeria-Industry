@@ -19,10 +19,11 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TenderDetailSkeleton } from '../components/Skeleton';
-import { cn } from '../lib/utils';
+import { cn, extractIdFromSlug } from '../lib/utils';
 
 const TenderDetail = () => {
-  const { id } = useParams();
+  const { id: slugId } = useParams();
+  const id = extractIdFromSlug(slugId);
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const [isResponding, setIsResponding] = useState(false);

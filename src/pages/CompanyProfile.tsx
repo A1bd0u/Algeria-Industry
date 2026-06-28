@@ -22,10 +22,11 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ProfileSkeleton } from '../components/Skeleton';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl, extractIdFromSlug } from '../lib/utils';
 
 const CompanyProfile = () => {
-  const { id } = useParams();
+  const { id: slugId } = useParams();
+  const id = extractIdFromSlug(slugId);
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState<'about' | 'products' | 'tenders'>('about');
@@ -305,7 +306,7 @@ const CompanyProfile = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {company.products.map(product => (
-                        <Link to={`/products/${product.id}`} key={product.id} className="flex items-center p-4 rounded-2xl border border-gray-100 hover:border-primary/20 transition-all group cursor-pointer">
+                        <Link to={`/products/${generateSlugUrl(product.name, product.id)}`} key={product.id} className="flex items-center p-4 rounded-2xl border border-gray-100 hover:border-primary/20 transition-all group cursor-pointer">
                           <div className="w-16 h-16 bg-gray-50 rounded-xl flex-shrink-0 flex items-center justify-center text-gray-300">
                             <Package className="h-8 w-8" />
                           </div>
@@ -336,7 +337,7 @@ const CompanyProfile = () => {
                               <span className="bg-success/10 text-success px-2 py-0.5 rounded">Ouvert</span>
                             </div>
                           </div>
-                          <Link to={`/tenders/${tender.id}`} className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all">
+                          <Link to={`/tenders/${generateSlugUrl(tender.title, tender.id)}`} className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all">
                             <ChevronRight className="h-5 w-5" />
                           </Link>
                         </div>

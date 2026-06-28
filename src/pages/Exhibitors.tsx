@@ -9,7 +9,7 @@ import { motion } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 const Exhibitors = () => {
   const { i18n } = useTranslation();
@@ -304,7 +304,7 @@ const Exhibitors = () => {
               </div>
 
               <div className="flex gap-3">
-                <Link to={`/directory/${exhibitor.id}`} className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20 group">
+                <Link to={`/directory/${generateSlugUrl(exhibitor.name, String(exhibitor.id))}`} className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center justify-center space-x-2 shadow-lg shadow-primary/20 group">
                   <span>Visiter</span>
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>

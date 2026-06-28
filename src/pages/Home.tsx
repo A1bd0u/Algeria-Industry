@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Skeleton, TenderSkeleton } from '../components/Skeleton';
 import { useCurrency } from '../context/CurrencyContext';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 const PARTNERS = [
   { name: "Sonatrach", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Sonatrach_Logo.svg/1200px-Sonatrach_Logo.svg.png" },
@@ -268,7 +268,7 @@ const Home = () => {
                 transition={{ delay: (i % 4) * 0.1 }}
                 className="bg-white border-r border-b border-border-tech p-6 hover:bg-neutral-bg transition-all group relative"
               >
-                <Link to={`/products/${product.id}`} className="block aspect-square overflow-hidden mb-6 bg-gray-50 border border-border-tech p-4 group-hover:border-secondary transition-colors">
+                <Link to={`/products/${generateSlugUrl(product.name, product.id)}`} className="block aspect-square overflow-hidden mb-6 bg-gray-50 border border-border-tech p-4 group-hover:border-secondary transition-colors">
                   <img 
                     src={product.image || `https://picsum.photos/seed/${product.id}/400/400`} 
                     alt={product.name} 
@@ -279,7 +279,7 @@ const Home = () => {
                 <div className={cn("space-y-4", i18n.language === 'ar' && "text-right")}>
                   <div>
                     <span className="tech-label">{product.company || 'Entreprise ID: ' + (product.owner_id ? product.owner_id.substring(0, 8) : 'Inconnu')}</span>
-                    <Link to={`/products/${product.id}`}>
+                    <Link to={`/products/${generateSlugUrl(product.name, product.id)}`}>
                       <h3 className={cn("text-sm font-black text-primary uppercase tracking-tight line-clamp-2 min-h-[40px] group-hover:text-secondary transition-colors", i18n.language === 'ar' && "text-base tracking-normal")}>
                         {product.name}
                       </h3>
@@ -291,7 +291,7 @@ const Home = () => {
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{i18n.language === 'ar' ? 'السعر' : 'Cotation'}</span>
                       <span className="text-sm font-mono font-bold text-primary">{formatPrice(product.price || 'Sur Devis')}</span>
                     </div>
-                    <Link to={`/products/${product.id}`} className="bg-primary text-white p-2 hover:bg-secondary transition-colors">
+                    <Link to={`/products/${generateSlugUrl(product.name, product.id)}`} className="bg-primary text-white p-2 hover:bg-secondary transition-colors">
                       <ArrowRight className={cn("h-4 w-4", i18n.language === 'ar' && "rotate-180")} />
                     </Link>
                   </div>

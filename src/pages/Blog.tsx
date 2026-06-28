@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import PageTransition from '../components/PageTransition';
 import { BlogCardSkeleton } from '../components/Skeleton';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 const Blog = () => {
   const { t, i18n } = useTranslation();
@@ -111,7 +111,7 @@ const Blog = () => {
               className="mb-16"
             >
               <div className={cn("bg-white rounded-[40px] overflow-hidden shadow-xl border border-gray-100 flex flex-col lg:flex-row group", i18n.language === 'ar' && "lg:flex-row-reverse text-right")}>
-                <Link to={`/blog/${featuredPost.id}`} className="lg:w-3/5 h-64 lg:h-auto overflow-hidden">
+                <Link to={`/blog/${generateSlugUrl(featuredPost.title, featuredPost.id)}`} className="lg:w-3/5 h-64 lg:h-auto overflow-hidden">
                   <img 
                     src={featuredPost.image} 
                     alt={featuredPost.title} 
@@ -129,7 +129,7 @@ const Blog = () => {
                       <span>{t('blog.featured')}</span>
                     </span>
                   </div>
-                  <Link to={`/blog/${featuredPost.id}`}>
+                  <Link to={`/blog/${generateSlugUrl(featuredPost.title, featuredPost.id)}`}>
                     <h2 className="text-3xl font-black text-primary mb-6 leading-tight group-hover:text-secondary transition-colors">
                       {featuredPost.title}
                     </h2>
@@ -147,7 +147,7 @@ const Blog = () => {
                         <p className="text-xs text-gray-400">{featuredPost.date}</p>
                       </div>
                     </div>
-                    <Link to={`/blog/${featuredPost.id}`} className={cn("btn-primary p-3 rounded-xl", i18n.language === 'ar' && "rotate-180")}>
+                    <Link to={`/blog/${generateSlugUrl(featuredPost.title, featuredPost.id)}`} className={cn("btn-primary p-3 rounded-xl", i18n.language === 'ar' && "rotate-180")}>
                       <ArrowRight className="h-5 w-5" />
                     </Link>
                   </div>
@@ -166,7 +166,7 @@ const Blog = () => {
                 transition={{ delay: i * 0.1 }}
                 className={cn("bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all group flex flex-col", i18n.language === 'ar' && "text-right")}
               >
-                <Link to={`/blog/${post.id}`} className="h-48 overflow-hidden relative block">
+                <Link to={`/blog/${generateSlugUrl(post.title, post.id)}`} className="h-48 overflow-hidden relative block">
                   <img 
                     src={post.image} 
                     alt={post.title} 
@@ -191,7 +191,7 @@ const Blog = () => {
                       <span>{post.readTime}</span>
                     </span>
                   </div>
-                  <Link to={`/blog/${post.id}`}>
+                  <Link to={`/blog/${generateSlugUrl(post.title, post.id)}`}>
                     <h3 className="text-lg font-bold text-primary mb-3 group-hover:text-secondary transition-colors leading-tight line-clamp-2">
                       {post.title}
                     </h3>

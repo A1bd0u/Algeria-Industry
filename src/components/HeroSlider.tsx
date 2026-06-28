@@ -12,22 +12,57 @@ interface HeroSliderProps {
 const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
   const { i18n } = useTranslation();
   const [current, setCurrent] = useState(0);
+  const [dynamicSlides, setDynamicSlides] = useState<Slide[]>([]);
+
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch('/api/ads');
+        if (res.ok) {
+          const data = await res.json();
+          // Filter ads that are validated
+          const activeAds = data.filter((ad: any) => 
+            ['Actif', 'published', 'approuvée', 'Approuvé'].includes(ad.status)
+          );
+          
+          const formattedSlides: Slide[] = activeAds.map((ad: any) => ({
+            id: ad.id,
+            bgGradient: ad.bg_gradient || 'from-primary to-primary/90',
+            productImg: ad.image_url || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=400',
+            title: ad.title,
+            subtitle: ad.subtitle || 'Espace Publicitaire',
+            description: ad.description || ad.objective || 'Découvrez les offres de nos partenaires.',
+            brandLogo: ad.brand_logo || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=100',
+            brandName: ad.brand_name || 'Partenaire',
+            brandTagline: ad.brand_tagline || 'Sponsor Premium'
+          }));
+          setDynamicSlides(formattedSlides);
+        }
+      } catch (err) {
+        console.error("Failed to fetch ads", err);
+      }
+    };
+    fetchAds();
+  }, []);
+
+  const displaySlides = dynamicSlides.length > 0 ? [...dynamicSlides, ...slides] : slides;
 
   useEffect(() => {
     setCurrent(0); // Reset current slide when slides change
+    if (!displaySlides || displaySlides.length === 0) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % displaySlides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [slides]);
+  }, [displaySlides.length]);
 
-  const next = () => setCurrent((prev) => (prev + 1) % slides.length);
-  const prev = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  const next = () => setCurrent((prev) => (prev + 1) % displaySlides.length);
+  const prev = () => setCurrent((prev) => (prev - 1 + displaySlides.length) % displaySlides.length);
 
-  if (!slides || slides.length === 0) return null;
+  if (!displaySlides || displaySlides.length === 0) return null;
 
   // Safely get the current slide to avoid "undefined" errors during transitions
-  const activeSlide = slides[current] || slides[0];
+  const activeSlide = displaySlides[current] || displaySlides[0];
 
   return (
     <div className={cn("relative h-[150px] md:h-[180px] w-full overflow-hidden bg-primary border-b border-border-tech", i18n.language === 'ar' && "font-arabic")}>
@@ -135,13 +170,13 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
       <div className={cn("absolute bottom-6 z-30 flex items-baseline space-x-2 text-white/40 font-mono", i18n.language === 'ar' ? "left-10 space-x-reverse" : "right-10")}>
         <span className="text-xl font-black text-white">{(current + 1).toString().padStart(2, '0')}</span>
         <span className="text-[10px]">/</span>
-        <span className="text-[10px]">{slides.length.toString().padStart(2, '0')}</span>
+        <span className="text-[10px]">{displaySlides.length.toString().padStart(2, '0')}</span>
       </div>
 
       {/* Navigation Dots */}
-      {slides.length > 1 && (
+      {displaySlides.length > 1 && (
         <div className={cn("absolute bottom-6 flex space-x-2 z-30", i18n.language === 'ar' ? "right-10 space-x-reverse" : "left-10")}>
-          {slides.map((_, i) => (
+          {displaySlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrent(i)}
@@ -155,7 +190,7 @@ const HeroSlider: React.FC<HeroSliderProps> = ({ slides }) => {
       )}
 
       {/* Arrows */}
-      {slides.length > 1 && (
+      {displaySlides.length > 1 && (
         <>
           <button 
             onClick={prev}

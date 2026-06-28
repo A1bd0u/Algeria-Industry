@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { ProductSkeleton } from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 const Products = () => {
   const [activePage, setActivePage] = React.useState(1);
@@ -481,7 +481,7 @@ const Products = () => {
                         <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Citations</p>
                         <p className="text-lg font-black text-primary uppercase tracking-tighter">{product.price}</p>
                       </div>
-                      <Link to={`/products/${product.id}`} className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center hover:bg-secondary transition-all shadow-lg hover:shadow-secondary/20">
+                      <Link to={`/products/${generateSlugUrl(product.name, product.id)}`} className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center hover:bg-secondary transition-all shadow-lg hover:shadow-secondary/20">
                         <ArrowRight className="h-5 w-5" />
                       </Link>
                     </div>

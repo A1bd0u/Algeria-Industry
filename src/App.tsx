@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import { DEFAULT_SLIDES, SLIDES_BY_PATH } from './constants/slides';
 import BecomeExhibitor from './pages/BecomeExhibitor';
+import AdsRequest from './pages/AdsRequest';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import CompanyProfile from './pages/CompanyProfile';
@@ -145,6 +146,7 @@ export default function App() {
                         </ProtectedRoute>
                       } />
                       <Route path="/become-exhibitor" element={<PageTransition><BecomeExhibitor /></PageTransition>} />
+                      <Route path="/ads-request" element={<PageTransition><AdsRequest /></PageTransition>} />
                       <Route path="/resources" element={<PageTransition><Resources /></PageTransition>} />
                       <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
                       <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />

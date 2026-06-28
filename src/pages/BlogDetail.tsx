@@ -13,10 +13,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArticleSkeleton } from '../components/Skeleton';
-import { cn } from '../lib/utils';
+import { cn, extractIdFromSlug } from '../lib/utils';
 
 const BlogDetail = () => {
-  const { id } = useParams();
+  const { id: slugId } = useParams();
+  const id = extractIdFromSlug(slugId);
   const { i18n } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
 

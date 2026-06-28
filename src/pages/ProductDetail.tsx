@@ -19,11 +19,12 @@ import { ProductDetailSkeleton } from '../components/Skeleton';
 import { Product as IProduct, useComparison } from '../context/ComparisonContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
-import { cn } from '../lib/utils';
+import { cn, extractIdFromSlug } from '../lib/utils';
 
 const ProductDetail = () => {
   const [activeTab, setActiveTab] = React.useState('description');
-  const { id } = useParams();
+  const { id: slugId } = useParams();
+  const id = extractIdFromSlug(slugId);
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const { comparedProducts, addToCompare, removeFromCompare } = useComparison();

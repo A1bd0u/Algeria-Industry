@@ -42,7 +42,7 @@ import {
   XAxis, YAxis
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
-import { cn } from '../lib/utils';
+import { cn, generateSlugUrl } from '../lib/utils';
 
 
 // Mock data for charts
@@ -1117,7 +1117,7 @@ const Dashboard = () => {
                       <span className="text-[10px] font-bold uppercase">{fav.location || 'Alger'}</span>
                    </div>
                    <Link 
-                    to={fav.item_type === 'product' ? `/products/${fav.item_id}` : `/company/${fav.item_id}`}
+                    to={fav.item_type === 'product' ? `/products/${generateSlugUrl(fav.name, String(fav.item_id))}` : `/directory/${generateSlugUrl(fav.name, String(fav.item_id))}`}
                     className="text-[10px] font-black text-secondary hover:underline uppercase tracking-widest flex items-center space-x-1"
                    >
                      <span>{fav.item_type === 'product' ? 'Voir produit' : 'Voir profil'}</span>
