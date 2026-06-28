@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Skeleton, TenderSkeleton } from '../components/Skeleton';
+import { Skeleton } from '../components/Skeleton';
 import { useCurrency } from '../context/CurrencyContext';
 import { cn, generateSlugUrl } from '../lib/utils';
 
@@ -21,16 +21,14 @@ const Home = () => {
   const { formatPrice } = useCurrency();
   const [visibleProducts, setVisibleProducts] = useState(4);
   const [products, setProducts] = useState<any[]>([]);
-  const [tenders, setTenders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchHomeData = async () => {
       setIsLoading(true);
       try {
-        const [prodRes, tendRes] = await Promise.all([
-          fetch('/api/products').catch(() => null),
-          fetch('/api/tenders').catch(() => null)
+        const [prodRes] = await Promise.all([
+          fetch('/api/products').catch(() => null)
         ]);
         
         let pData = [
@@ -40,21 +38,11 @@ const Home = () => {
           { id: '4', name: "Compresseur d'air", company: "Air Tech", price: "850000", image: "https://picsum.photos/seed/p4/400/400" }
         ];
 
-        let tData = [
-          { id: '1', title: "Fourniture de pompes", sector: "Équipement", author: { company: "Sonatrach" }, status: "Urgent", created_at: new Date().toISOString() },
-          { id: '2', title: "Installation réseau incendie", sector: "Sécurité", author: { company: "Cosider" }, status: "Ouvert", created_at: new Date().toISOString() },
-          { id: '3', title: "Maintenance parc auto", sector: "Services", author: { company: "Cevital" }, status: "Ouvert", created_at: new Date().toISOString() }
-        ];
-
         if (prodRes && prodRes.ok) {
           try { pData = await prodRes.json(); } catch(e){}
         }
-        if (tendRes && tendRes.ok) {
-          try { tData = await tendRes.json(); } catch(e){}
-        }
 
         setProducts(pData.slice(0, 8));
-        setTenders(tData.slice(0, 3));
       } catch (e) {
         console.error("Home fetch error", e);
       } finally {
@@ -127,88 +115,6 @@ const Home = () => {
                 referrerPolicy="no-referrer"
               />
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tenders Activity Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={cn("flex flex-col md:flex-row items-end justify-between mb-12", i18n.language === 'ar' && "md:flex-row-reverse")}>
-            <div className={i18n.language === 'ar' ? "text-right" : ""}>
-              <div className={cn("flex items-center space-x-3 mb-4", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
-                <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary">
-                  <Activity className="h-6 w-6" />
-                </div>
-                <h2 className="text-sm font-black text-primary uppercase tracking-[0.3em] font-sans">Activité du Réseau</h2>
-              </div>
-              <h3 className="text-3xl font-black text-primary font-sans leading-none uppercase tracking-tighter">Derniers Appels d'Offres</h3>
-            </div>
-            <Link to="/tenders" className="group flex items-center space-x-3 mt-6 md:mt-0">
-              <span className="text-[11px] font-black uppercase tracking-widest text-primary/40 group-hover:text-secondary transition-colors">Explorer tous les projets</span>
-              <div className="p-2 border border-primary/10 rounded-full group-hover:bg-secondary group-hover:text-white group-hover:border-secondary transition-all">
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {isLoading ? (
-                [1, 2, 3].map(i => <TenderSkeleton key={i} />)
-              ) : tenders.length === 0 ? (
-                <div className="bg-gray-50 p-8 text-center text-gray-400 font-medium text-sm rounded-[24px]">
-                  Aucun appel d'offres pour le moment.
-                </div>
-              ) : tenders.map((tender, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={cn(
-                    "bg-neutral-bg p-6 border-l-4 shadow-sm hover:shadow-xl transition-all cursor-pointer group flex items-center justify-between",
-                    tender.status === 'Urgent' ? "border-red-500" : "border-secondary",
-                    i18n.language === 'ar' && "flex-row-reverse text-right"
-                  )}
-                >
-                  <div className="flex-1">
-                    <div className={cn("flex items-center space-x-3 mb-2", i18n.language === 'ar' && "flex-row-reverse space-x-reverse")}>
-                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">{tender.category || tender.sector || '-'}</span>
-                      <span className="w-1 h-1 bg-gray-200 rounded-full" />
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{new Date(tender.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <h4 className="text-lg font-black text-primary leading-tight uppercase group-hover:text-secondary transition-colors mb-2">{tender.title}</h4>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{tender.author?.company || 'Entreprise'}</p>
-                  </div>
-                  <div className={cn("flex flex-col items-end space-y-4 ml-6", i18n.language === 'ar' && "ml-0 mr-6 items-start")}>
-                    <span className={cn(
-                      "text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest",
-                      tender.status === 'Urgent' ? "bg-red-500 text-white" : "bg-success/10 text-success"
-                    )}>
-                      {tender.status || 'Ouvert'}
-                    </span>
-                    <button className="p-2 bg-white text-gray-400 group-hover:bg-primary group-hover:text-white transition-all rounded-xl border border-gray-100 flex items-center justify-center" onClick={(e) => { e.preventDefault(); alert("Fonctionnalité en cours de développement"); }}>
-                      <ArrowUpRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="bg-primary p-8 rounded-[40px] text-white overflow-hidden relative group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform duration-700">
-                <FileText className="h-40 w-40" />
-              </div>
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-secondary mb-6 relative z-10">Opportunités Pro</h4>
-              <h5 className="text-3xl font-black mb-8 leading-tight relative z-10">Publiez votre besoin technique aujourd'hui</h5>
-              <p className="text-white/60 text-sm mb-10 leading-relaxed font-bold relative z-10">Accédez à un réseau de +1,200 entreprises certifiées prêtes à répondre à vos demandes.</p>
-              <Link to="/tenders" className="btn-secondary w-full py-4 rounded-2xl flex items-center justify-center space-x-3 relative z-10">
-                <Plus className="h-5 w-5" />
-                <span className="text-xs font-black uppercase tracking-widest text-center">Lancer un Appel d'Offre</span>
-              </Link>
-            </div>
           </div>
         </div>
       </section>

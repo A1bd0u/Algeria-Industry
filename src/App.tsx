@@ -35,13 +35,10 @@ import Products from './pages/Products';
 import Register from './pages/Register';
 import RegisterSuccess from './pages/RegisterSuccess';
 import Resources from './pages/Resources';
-import RFQForm from './pages/RFQForm';
 import SearchResults from './pages/SearchResults';
 import Subscriptions from './pages/Subscriptions';
-import TenderDetail from './pages/TenderDetail';
-import Tenders from './pages/Tenders';
+import Tarifs from './pages/Tarifs';
 import Terms from './pages/Terms';
-import VirtualShow from './pages/VirtualShow';
 
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -110,8 +107,6 @@ export default function App() {
                       <Route path="/products" element={<PageTransition><Products /></PageTransition>} />
                       <Route path="/products/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
                       <Route path="/exhibitors" element={<PageTransition><Exhibitors /></PageTransition>} />
-                      <Route path="/tenders" element={<PageTransition><Tenders /></PageTransition>} />
-                      <Route path="/tenders/:id" element={<PageTransition><TenderDetail /></PageTransition>} />
                       <Route path="/search" element={<PageTransition><SearchResults /></PageTransition>} />
                       <Route path="/dashboard/*" element={
                         <ProtectedRoute>
@@ -127,18 +122,17 @@ export default function App() {
                           </PageTransition>
                         </ProtectedRoute>
                       } />
-                      <Route path="/virtual-show" element={<PageTransition><VirtualShow /></PageTransition>} />
                       <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
                       <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
                       <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
                       <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
                       <Route path="/register-success" element={<PageTransition><RegisterSuccess /></PageTransition>} />
                       <Route path="/subscriptions" element={<PageTransition><Subscriptions /></PageTransition>} />
+                      <Route path="/tarifs" element={<PageTransition><Tarifs /></PageTransition>} />
                       <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
                       <Route path="/faq" element={<FAQ />} />
                       <Route path="/blog" element={<Blog />} />
                       <Route path="/blog/:id" element={<PageTransition><BlogDetail /></PageTransition>} />
-                      <Route path="/rfq" element={<PageTransition><RFQForm /></PageTransition>} />
                       <Route path="/events" element={<Events />} />
                       <Route path="/extranet" element={
                         <ProtectedRoute allowedRoles={['admin']}>

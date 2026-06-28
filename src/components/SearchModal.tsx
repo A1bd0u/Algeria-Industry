@@ -18,7 +18,6 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
   const results: SearchResult[] = ([
     { id: '1', type: 'product', title: 'Pompe Hydraulique P3', subtitle: 'Global Industry', category: 'Hydraulique' },
     { id: '2', type: 'company', title: 'Sonatrach', subtitle: 'Alger, Algérie', category: 'Énergie' },
-    { id: '3', type: 'tender', title: 'Fourniture de tubes en acier', subtitle: 'Ministère de l\'Industrie', category: 'Métallurgie' },
   ] as const).filter(r => 
     r.title.toLowerCase().includes(query.toLowerCase()) || 
     r.subtitle.toLowerCase().includes(query.toLowerCase())
@@ -28,7 +27,6 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
     switch(type) {
       case 'product': return Package;
       case 'company': return Building2;
-      case 'tender': return FileText;
       default: return Search;
     }
   };
@@ -38,7 +36,6 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
     switch(result.type) {
       case 'product': navigate(`/products/${result.id}`); break;
       case 'company': navigate(`/directory/${result.id}`); break;
-      case 'tender': navigate(`/tenders`); break;
     }
   };
 
@@ -81,7 +78,7 @@ const SearchModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
               <input 
                 autoFocus
                 type="text" 
-                placeholder="Rechercher un produit, une entreprise ou un AO..." 
+                placeholder="Rechercher un produit ou une entreprise..." 
                 className="flex-1 bg-transparent border-none outline-none text-lg text-primary font-medium"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

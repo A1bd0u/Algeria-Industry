@@ -68,9 +68,6 @@ const CompanyProfile = () => {
           products: [
              { id: 101, name: "Produit A", category: "Équipement" },
              { id: 102, name: "Produit B", category: "Outillage" }
-          ],
-          tenders: [
-             { id: 201, title: "Appel d'offre 1", date: "15 Juin 2026" }
           ]
         };
 
@@ -229,7 +226,6 @@ const CompanyProfile = () => {
                 {[
                   { id: 'about', name: 'À propos', icon: Building2 },
                   { id: 'products', name: 'Catalogue Produits', icon: Package },
-                  { id: 'tenders', name: 'Appels d\'offres', icon: FileText },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -316,31 +312,6 @@ const CompanyProfile = () => {
                           </div>
                           <ChevronRight className="h-5 w-5 text-gray-200 group-hover:text-primary transition-colors" />
                         </Link>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeTab === 'tenders' && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                    <h2 className="text-2xl font-bold text-primary mb-6">Appels d'offres récents</h2>
-                    <div className="space-y-4">
-                      {company.tenders.map(tender => (
-                        <div key={tender.id} className="p-6 rounded-2xl border border-gray-100 hover:border-primary/20 transition-all group cursor-pointer flex items-center justify-between">
-                          <div>
-                            <h4 className="font-bold text-primary group-hover:text-secondary transition-colors mb-1">{tender.title}</h4>
-                            <div className="flex items-center space-x-3 text-xs text-gray-400 font-medium">
-                              <span className="flex items-center space-x-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>Publié le {tender.date}</span>
-                              </span>
-                              <span className="bg-success/10 text-success px-2 py-0.5 rounded">Ouvert</span>
-                            </div>
-                          </div>
-                          <Link to={`/tenders/${generateSlugUrl(tender.title, tender.id)}`} className="bg-primary/5 text-primary p-2 rounded-lg group-hover:bg-secondary group-hover:text-white transition-all">
-                            <ChevronRight className="h-5 w-5" />
-                          </Link>
-                        </div>
                       ))}
                     </div>
                   </motion.div>

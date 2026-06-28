@@ -232,7 +232,7 @@ const ProductDetail = () => {
 
               <div className="space-y-4">
                 <button 
-                  onClick={() => navigate(`/tenders?product=${encodeURIComponent(product.name)}`)}
+                  onClick={() => navigate(`/contact?subject=${encodeURIComponent('Devis pour ' + product.name)}`)}
                   className="w-full btn-primary py-4 rounded-2xl flex items-center justify-center space-x-3 text-lg group"
                 >
                   <FileText className="h-6 w-6" />

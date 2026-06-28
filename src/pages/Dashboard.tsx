@@ -90,43 +90,7 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [showProductForm, setShowProductForm] = useState(false);
-  const [showTenderForm, setShowTenderForm] = useState(false);
   const [showAdForm, setShowAdForm] = useState(false);
-  const [tenderStep, setTenderStep] = useState(1);
-  const [tenderFormData, setTenderFormData] = useState({
-    title: '',
-    sector: "Énergie & Hydrocarbures",
-    budget: '',
-    description: '',
-    location: "Alger (Rouiba / Dar el Beida)",
-    deadline: '',
-    file_url: ''
-  });
-
-  const [uploadingTenderFile, setUploadingTenderFile] = useState(false);
-
-  const handleTenderFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const formData = new FormData();
-    formData.append('file', e.target.files[0]);
-    setUploadingTenderFile(true);
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTenderFormData(prev => ({ ...prev, file_url: data.url }));
-      } else {
-        const errText = await res.text();
-        console.error('Erreur upload tender file:', res.status, errText);
-      }
-    } catch(err) {
-      console.error(err);
-    }
-    setUploadingTenderFile(false);
-  };
 
   const [adFormData, setAdFormData] = useState({
     name: '',
@@ -180,7 +144,6 @@ const Dashboard = () => {
 
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedTender, setSelectedTender] = useState<any>(null);
   const [globalSearch, setGlobalSearch] = useState('');
 
   const handleSendMessage = async () => {
@@ -244,39 +207,6 @@ const Dashboard = () => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
-
-  const [tenders, setTenders] = useState<any[]>([]);
-  const [tendersLoading, setTendersLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTenders = async () => {
-      try {
-        setTendersLoading(true);
-        const endpoint = user?.role === 'acheteur' ? '/api/tenders/my' : '/api/tenders';
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          let data = await res.json();
-          // Convert to expected UI format
-          data = data.map((t: any) => ({
-             id: t.id,
-             title: t.title,
-             date: new Date(t.created_at || t.deadline).toLocaleDateString(),
-             bids: Math.floor(Math.random() * 15), // mocked bids
-             status: t.status === 'open' ? 'Ouvert' : t.status,
-             color: t.status === 'open' ? 'text-secondary' : 'text-gray-400',
-             company: t.author?.company
-          }));
-          
-          setTenders(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch tenders:', err);
-      } finally {
-        setTendersLoading(false);
-      }
-    };
-    if (isAuthenticated) fetchTenders();
-  }, [user, isAuthenticated]);
 
   const [companyInfo, setCompanyInfo] = useState({
     name: user?.company || '',
@@ -342,38 +272,6 @@ const Dashboard = () => {
         setShowProductForm(false);
         setProductFileUrl('');
         showNotify("Le produit a été ajouté avec succès au catalogue.", "success");
-      } else {
-        showNotify("Erreur lors de l'ajout", "error");
-      }
-    } catch (err) {
-      showNotify("Erreur réseau", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const submitTender = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/tenders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-           title: tenderFormData.title,
-           description: tenderFormData.description,
-           deadline: tenderFormData.deadline,
-           category: tenderFormData.sector,
-           budget: tenderFormData.budget,
-           file_url: tenderFormData.file_url
-        }) 
-      });
-      if (res.ok) {
-        const newTender = await res.json();
-        setTenders(prev => [newTender, ...prev]);
-        setShowTenderForm(false);
-        setTenderStep(1);
-        setTenderFormData({ title: '', sector: "Énergie & Hydrocarbures", budget: '', description: '', location: "Alger (Rouiba / Dar el Beida)", deadline: '', file_url: '' });
-        showNotify("Votre appel d'offre a été soumis avec succès.", "success");
       } else {
         showNotify("Erreur lors de l'ajout", "error");
       }
@@ -455,23 +353,15 @@ const Dashboard = () => {
     p.cat.toLowerCase().includes(globalSearch.toLowerCase())
   );
 
-  const filteredTenders = tenders.filter(t => 
-    t.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
-    t.status.toLowerCase().includes(globalSearch.toLowerCase())
-  );
-
   const renderContent = () => {
     if (!user) return null;
     switch(activeTab) {
       case 'overview':
         const stats = user.role === 'fournisseur' ? [
           { label: 'Publicités', value: apiStats?.metrics?.ads || 0, trend: '+12%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Demandes (Devis)', value: apiStats?.metrics?.rfqs || 0, trend: '+5%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
           { label: 'Produits actifs', value: apiStats?.metrics?.items || 0, trend: 'Stable', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Score visibilité', value: '92%', trend: '+2%', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
         ] : [
-          { label: 'AO lancés', value: apiStats?.metrics?.items || 0, trend: '+2', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Devis Reçus', value: apiStats?.metrics?.rfqs || 0, trend: '+15%', icon: MessageSquare, color: 'text-purple-600', bg: 'bg-purple-50' },
           { label: 'Économies est.', value: '1.2M DZD', trend: '8%', icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
           { label: 'Messages', value: apiStats?.metrics?.messages || 0, trend: 'Stable', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
         ];
@@ -484,7 +374,7 @@ const Dashboard = () => {
             className="space-y-8"
           >
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {stats.map((stat, i) => (
                 <div 
                   key={i}
@@ -843,153 +733,6 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-          </motion.div>
-        );
-      case 'tenders':
-        if (selectedTender) {
-          return (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-8"
-            >
-              <div className="flex items-center space-x-4 mb-4">
-                 <button 
-                  onClick={() => setSelectedTender(null)}
-                  className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-primary transition-all"
-                 >
-                   <X className="h-4 w-4" />
-                 </button>
-                 <h3 className="text-xl font-bold text-primary italic uppercase tracking-tight">Détails du RFQ</h3>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
-                       <span className="text-[10px] font-black text-secondary bg-secondary/10 px-4 py-1 rounded-full uppercase tracking-widest">{selectedTender.status}</span>
-                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">PUBLIÉ LE {selectedTender.date}</span>
-                    </div>
-                    <h2 className="text-3xl font-black text-primary uppercase italic tracking-tighter mb-6">{selectedTender.title}</h2>
-                    <p className="text-gray-600 leading-relaxed mb-10">
-                      Nous recherchons un partenaire certifié pour la maintenance préventive et curative de 4 transformateurs de 20kV. 
-                      Le projet inclut l'inspection visuelle, le test diélectrique de l'huile, la vérification des accessoires de protection (DGPT2) 
-                      et le nettoyage complet des bornes haute tension.
-                    </p>
-                    <div className="grid grid-cols-2 gap-6 p-8 bg-gray-50 rounded-[32px]">
-                       <div>
-                          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Localisation</p>
-                          <p className="text-[11px] font-black text-primary uppercase tracking-tight">Zone Industrielle Rouiba</p>
-                       </div>
-                       <div>
-                          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Budget Estimé</p>
-                          <p className="text-[11px] font-black text-primary uppercase tracking-tight">Confidentiel</p>
-                       </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-8 rounded-[32px] border border-gray-100">
-                    <h4 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] mb-6">Offres reçues ({selectedTender.bids})</h4>
-                    <div className="space-y-4">
-                       {[1, 2, 3].map(i => (
-                         <div key={i} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-transparent hover:border-secondary transition-all">
-                            <div className="flex items-center space-x-4">
-                               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm"><Building2 className="h-5 w-5" /></div>
-                               <div>
-                                  <p className="text-xs font-black text-primary uppercase">Candidat #{i*242}</p>
-                                  <p className="text-[9px] font-bold text-gray-400 uppercase">Soumis il y a {i}h</p>
-                               </div>
-                            </div>
-                            <button onClick={() => showNotify("Détails de l'offre ouverts dans une nouvelle fenêtre", "success")} className="text-[9px] font-black text-secondary uppercase tracking-widest hover:underline">Voir l'offre</button>
-                         </div>
-                       ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                   <div className="bg-primary p-8 rounded-[40px] text-white">
-                      <h4 className="text-[11px] font-black uppercase tracking-widest mb-6 opacity-40">Actions</h4>
-                      <div className="space-y-3">
-                         <button onClick={() => showNotify("Accès au dossier candidat complet...", "success")} className="w-full py-4 bg-white text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">Consulter Dossier</button>
-                         <button onClick={() => showNotify("Téléchargement PDF en cours...", "success")} className="w-full py-4 bg-primary border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Télécharger PDF</button>
-                      </div>
-                      <div className="mt-8 pt-8 border-t border-white/10">
-                         <p className="text-[9px] font-bold text-white/50 uppercase leading-relaxed italic">Date limite de soumission: 25 Mai 2026 à 17:00</p>
-                      </div>
-                   </div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        }
-        return (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
-          >
-            <div className="flex items-center justify-between mb-8">
-               <div>
-                  <h3 className="text-xl font-bold text-primary italic uppercase tracking-tight">Appels d'Offres & RFQ</h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Suivi de vos demandes et opportunités</p>
-               </div>
-               {user.role === 'acheteur' && (
-                 <button onClick={() => setShowTenderForm(true)} className="btn-primary py-3 px-6 text-[10px] font-black uppercase tracking-widest flex items-center space-x-2">
-                   <Plus className="h-4 w-4" />
-                   <span>Lancer un RFQ</span>
-                 </button>
-               )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {tendersLoading ? (
-                 <div className="bg-white p-10 rounded-[32px] border border-gray-100 flex flex-col items-center justify-center">
-                    <Loader2 className="h-8 w-8 text-secondary animate-spin mb-4" />
-                    <span className="text-[10px] font-black uppercase text-gray-400">Chargement de vos données...</span>
-                 </div>
-              ) : (
-                <>
-                  {filteredTenders.map((t) => (
-                    <div key={t.id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm flex items-center justify-between hover:border-secondary transition-all group">
-                       <div className="flex items-center space-x-6">
-                          <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                            <FileText className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-black text-primary uppercase italic">{t.title}</h4>
-                            <div className="flex items-center space-x-4 mt-1">
-                               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t.reference_id ? `REF: ${t.reference_id}` : `ID: ${t.id.substring(0, 8)}`}</span>
-                               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Publié le: {t.date}</span>
-                               <span className="text-[9px] font-black text-secondary uppercase tracking-widest bg-secondary/5 px-2 py-0.5 rounded-full">{t.bids} OFFRES</span>
-                            </div>
-                          </div>
-                       </div>
-                       <div className="flex items-center space-x-6">
-                          <span className={cn("text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full", t.status === 'Ouvert' ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400")}>
-                            {t.status}
-                          </span>
-                          <button 
-                            onClick={() => setSelectedTender(t)}
-                            className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:text-primary transition-all"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </button>
-                       </div>
-                    </div>
-                  ))}
-                  {filteredTenders.length === 0 && (
-                    <div className="py-20 text-center opacity-50">
-                      <Search className="h-10 w-10 mx-auto mb-4" />
-                      <p className="text-[10px] font-black uppercase tracking-widest">
-                        {globalSearch ? `Aucun résultat pour "${globalSearch}"` : "Aucun appel d'offre"}
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
           </motion.div>
         );
       case 'products':
@@ -1406,7 +1149,6 @@ const Dashboard = () => {
     { id: 'messages', name: 'Messagerie', icon: MessageSquare },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'products', name: 'Mes Produits', icon: Package, roles: ['fournisseur'] },
-    { id: 'tenders', name: user?.role === 'acheteur' ? 'Mes Appels d\'offres' : 'Opportunités AO', icon: FileText },
     { id: 'company', name: 'Ma Fiche Entreprise', icon: Building2, roles: ['fournisseur'] },
     { id: 'favorites', name: 'Favoris', icon: Heart, roles: ['acheteur'] },
     { id: 'ads', name: 'Publicité', icon: Zap },
@@ -1488,7 +1230,7 @@ const Dashboard = () => {
                     type="text" 
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
-                    placeholder="Filtrer partout (produits, RFQ, entreprises...)"
+                    placeholder="Filtrer partout (produits, entreprises...)"
                     className="w-full bg-white border border-gray-100 px-16 py-4 rounded-[32px] text-xs font-bold outline-none focus:border-secondary focus:shadow-xl focus:shadow-secondary/5 transition-all"
                   />
                </div>
@@ -1501,12 +1243,7 @@ const Dashboard = () => {
                   <span>Abonnement Premium Actif</span>
                 </Link>
               )}
-              {user?.role === 'acheteur' ? (
-                <button onClick={() => setShowTenderForm(true)} className="btn-primary py-2 px-4 text-sm flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Nouveau RFQ</span>
-                </button>
-              ) : (
+              {user?.role === 'fournisseur' && (
                 <button onClick={() => setShowProductForm(true)} className="btn-primary py-2 px-4 text-sm flex items-center space-x-2">
                    <Plus className="h-4 w-4" />
                    <span>Ajouter Produit</span>
@@ -1651,258 +1388,6 @@ const Dashboard = () => {
         )}
       </AnimatePresence>
 
-      {/* Tender Form Modal */}
-      <AnimatePresence>
-        {showTenderForm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-primary/40 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl bg-white rounded-[40px] shadow-2xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex h-[80vh]">
-                <div className="w-80 bg-gray-50 p-10 border-r border-gray-100 hidden md:block">
-                  <div className="mb-8">
-                     <h3 className="text-xl font-black text-primary uppercase tracking-tighter italic">Nouveau RFQ</h3>
-                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Appel d'Offres Industriel</p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {[
-                      { step: 1, label: 'Détails de base', icon: Info },
-                      { step: 2, label: 'Spécifications', icon: Zap },
-                      { step: 3, label: 'Logistique', icon: Package },
-                      { step: 4, label: 'Publication', icon: CheckCircle },
-                    ].map((s) => (
-                      <div 
-                        key={s.step} 
-                        className={cn(
-                          "flex items-center space-x-4 p-4 rounded-2xl transition-all",
-                          tenderStep === s.step ? "bg-white shadow-sm border border-gray-100" : "opacity-40"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center",
-                          tenderStep >= s.step ? "bg-secondary text-white" : "bg-gray-200 text-gray-400"
-                        )}>
-                          <s.icon className="h-4 w-4" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">{s.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-auto p-6 bg-primary rounded-3xl text-white mt-12">
-                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">
-                        Chaque appel d'offre est modéré sous 24h par nos experts industriels.
-                     </p>
-                  </div>
-                </div>
-
-                <div className="flex-1 p-10 overflow-y-auto no-scrollbar flex flex-col">
-                  <div className="flex justify-between items-center mb-8">
-                    <span className="text-[10px] font-black text-secondary uppercase tracking-[0.3em]">Étape {tenderStep} / 4</span>
-                    <button onClick={() => setShowTenderForm(false)} className="p-2 text-gray-400 hover:text-primary transition-all">
-                      <X className="h-6 w-6" />
-                    </button>
-                  </div>
-
-                  <div className="flex-1">
-                    <AnimatePresence mode="wait">
-                      {tenderStep === 1 && (
-                        <motion.div 
-                          key="step1"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          className="space-y-8"
-                        >
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Titre du Projet</label>
-                            <input 
-                              type="text" 
-                              value={tenderFormData.title}
-                              onChange={e => setTenderFormData({...tenderFormData, title: e.target.value})}
-                              placeholder="Ex: Fourniture de câbles armés 20kV..." 
-                              className="w-full bg-gray-50 border-none px-8 py-5 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-secondary/20 transition-all" 
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Secteur d'activité</label>
-                              <select 
-                                value={tenderFormData.sector}
-                                onChange={e => setTenderFormData({...tenderFormData, sector: e.target.value})}
-                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
-                                <option>Énergie & Hydrocarbures</option>
-                                <option>Construction & BTP</option>
-                                <option>Automobile & Mécanique</option>
-                                <option>Agro-alimentaire</option>
-                              </select>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Budget estimé (DZD)</label>
-                              <input 
-                                type="text" 
-                                value={tenderFormData.budget}
-                                onChange={e => setTenderFormData({...tenderFormData, budget: e.target.value})}
-                                placeholder="Ex: 5,000,000" 
-                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-sm font-bold outline-none" />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {tenderStep === 2 && (
-                        <motion.div 
-                          key="step2"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          className="space-y-8"
-                        >
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Description détaillée</label>
-                            <textarea 
-                              rows={6} 
-                              value={tenderFormData.description}
-                              onChange={e => setTenderFormData({...tenderFormData, description: e.target.value})}
-                              placeholder="Détaillez vos besoins techniques..." 
-                              className="w-full bg-gray-50 border-none px-8 py-6 rounded-3xl text-sm font-medium outline-none resize-none" 
-                            />
-                          </div>
-                          <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center">
-                             <Upload className="h-6 w-6 text-gray-300 mx-auto mb-2" />
-                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Joindre cahier des charges (PDF/Excel)</p>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {tenderStep === 3 && (
-                        <motion.div 
-                          key="step3"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          className="space-y-8"
-                        >
-                           <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Lieu de livraison / Service</label>
-                              <select 
-                                value={tenderFormData.location}
-                                onChange={e => setTenderFormData({...tenderFormData, location: e.target.value})}
-                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none">
-                                <option>Alger (Rouiba / Dar el Beida)</option>
-                                <option>Oran (Arzew / Bethioua)</option>
-                                <option>Sétif (Zone Industrielle)</option>
-                                <option>Hassi Messaoud</option>
-                              </select>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Date limite de réponse</label>
-                              <input 
-                                type="date" 
-                                value={tenderFormData.deadline}
-                                onChange={e => setTenderFormData({...tenderFormData, deadline: e.target.value})}
-                                className="w-full bg-gray-50 border-none px-6 py-5 rounded-2xl text-xs font-bold outline-none" />
-                            </div>
-                          </div>
-                          <div className="space-y-4">
-                             <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Critères de sélection</label>
-                             <div className="grid grid-cols-2 gap-4">
-                                {['Prix compétitif', 'Délais courts', 'Certification ISO', 'Service local'].map(c => (
-                                  <label key={c} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
-                                     <input type="checkbox" className="w-4 h-4 rounded text-secondary" />
-                                     <span className="text-[10px] font-bold text-gray-600 uppercase">{c}</span>
-                                  </label>
-                                ))}
-                             </div>
-                          </div>
-
-                          <div className="pt-4 border-t border-gray-50 space-y-2 mt-6">
-                            <label className="text-[10px] font-black text-primary uppercase tracking-widest italic">Cahier des charges détaillé (PDF)</label>
-                            <div className="p-6 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-center relative cursor-pointer hover:bg-gray-100 transition-colors">
-                              <input type="file" accept=".pdf" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleTenderFileUpload} disabled={uploadingTenderFile} />
-                              {uploadingTenderFile ? (
-                                <Loader2 className="h-6 w-6 text-primary mx-auto mb-2 animate-spin" />
-                              ) : tenderFormData.file_url ? (
-                                <div className="text-secondary font-black text-sm uppercase tracking-widest break-all">Fichier Ajouté: {tenderFormData.file_url.split('-').pop()}</div>
-                              ) : (
-                                <>
-                                  <Upload className="h-6 w-6 text-gray-300 mx-auto mb-2" />
-                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Joindre le cahier des charges</p>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {tenderStep === 4 && (
-                        <motion.div 
-                          key="step4"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="text-center py-10"
-                        >
-                           <div className="w-20 h-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-8">
-                              <ShieldCheck className="h-10 w-10 text-secondary" />
-                           </div>
-                           <h4 className="text-2xl font-black text-primary uppercase tracking-tighter mb-4 italic">Prêt à publier ?</h4>
-                           <p className="text-sm text-gray-500 max-w-sm mx-auto mb-10">Votre appel d'offre sera transmis aux fournisseurs correspondants à vos critères une fois validé par nos services.</p>
-                           <div className="bg-gray-50 p-6 rounded-3xl text-left mb-10">
-                              <div className="flex justify-between mb-4">
-                                 <span className="text-[10px] font-bold text-gray-400 uppercase italic">Titre:</span>
-                                 <span className="text-[10px] font-black text-primary uppercase italic">Fourniture de câbles armés...</span>
-                              </div>
-                              <div className="flex justify-between">
-                                 <span className="text-[10px] font-bold text-gray-400 uppercase italic">Lieu:</span>
-                                 <span className="text-[10px] font-black text-primary uppercase italic">Alger (Rouiba)</span>
-                              </div>
-                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="mt-8 flex space-x-4">
-                    {tenderStep > 1 && (
-                      <button 
-                        onClick={() => setTenderStep(prev => prev - 1)}
-                        className="px-8 border border-gray-100 text-gray-400 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-primary transition-all"
-                      >
-                        Retour
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => {
-                        if (tenderStep < 4) {
-                          setTenderStep(prev => prev + 1);
-                        } else {
-                          submitTender();
-                        }
-                      }}
-                      className="flex-1 bg-secondary text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-secondary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-3"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <span>{tenderStep === 4 ? 'Publier le RFQ' : 'Étape suivante'}</span>
-                          {tenderStep < 4 && <ChevronRight className="h-4 w-4" />}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
       {/* Ad Space Request Form Modal */}
       <AnimatePresence>
         {showAdForm && (

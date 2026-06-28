@@ -1196,38 +1196,6 @@ const ConsolePro = () => {
           </motion.div>
         );
 
-      case 'gov-tenders':
-        return (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-            <h3 className="text-2xl font-black text-primary uppercase tracking-tighter italic mb-8">Modération des Appels d'Offres</h3>
-            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-               <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">En attente de validation (3)</span>
-               </div>
-               <div className="divide-y divide-gray-50">
-                  {[
-                    { company: 'Sonelgaz', title: 'Fourniture de Transformateurs HT', budget: '120M DZD', date: 'Aujourd\'hui' },
-                    { company: 'Cosider', title: 'Location d\'Engins de Terrassement', budget: '15M DZD', date: 'Hier' },
-                  ].map((ao, i) => (
-                    <div key={i} className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-gray-50/50 transition-all">
-                       <div className="flex items-center space-x-6">
-                          <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-secondary"><FileText className="h-6 w-6" /></div>
-                          <div>
-                             <h4 className="text-sm font-black text-primary uppercase tracking-tight mb-1">{ao.title}</h4>
-                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{ao.company} • Budget estimé : {ao.budget}</p>
-                          </div>
-                       </div>
-                       <div className="flex items-center space-x-3">
-                          <button onClick={() => showNotify("Appel d'offres publié.", "success")} className="px-6 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all">Publier</button>
-                          <button onClick={() => showNotify("Appel d'offres refusé.", "error")} className="px-6 py-3 border border-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-red-500 transition-all">Refuser</button>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
-          </motion.div>
-        );
-
       case 'gov-telemetry':
         return (
           <motion.div 
@@ -1452,7 +1420,6 @@ const ConsolePro = () => {
         { id: 'gov-roles', name: 'Rôles & Staff', icon: ShieldCheck },
         { id: 'gov-security', name: 'Centre de Sécurité', icon: Lock },
         { id: 'gov-companies', name: 'KYC & Entreprises', icon: Building2 },
-        { id: 'gov-tenders', name: 'Modération AO', icon: FileText },
         { id: 'gov-support', name: 'Support Technique', icon: MessageSquare },
       ]
     },

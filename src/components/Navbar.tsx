@@ -50,10 +50,9 @@ const Navbar = () => {
   const navItems = [
     { name: t('nav.products'), path: '/products', hasMega: true, icon: Package },
     { name: i18n.language === 'ar' ? 'العارضين' : 'Exposants', path: '/exhibitors', icon: BookOpen },
-    { name: i18n.language === 'ar' ? 'طلب اقتباس' : 'RFQ', path: '/rfq', icon: Zap },
-    { name: t('nav.tenders'), path: '/tenders', icon: FileText },
     { name: t('nav.news'), path: '/blog', icon: Newspaper },
     { name: t('nav.resources'), path: '/resources', icon: Library },
+    { name: i18n.language === 'ar' ? 'الأسعار' : 'Tarifs', path: '/tarifs', icon: Award },
   ];
 
   const categories = [
